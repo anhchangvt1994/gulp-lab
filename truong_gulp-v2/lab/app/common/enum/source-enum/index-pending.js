@@ -26,4 +26,5 @@ var APP = {
         images: APP_DIST_PATH + '/images',
     }
 };
-module.exports = APP;
+
+exports.default = APP;

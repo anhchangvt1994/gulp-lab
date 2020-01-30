@@ -20,7 +20,7 @@ const _ARR_DIR_CHILD = {
 };
 
 const getUrlWithBaseDir = function(baseDir, isGetDeep) {
-  var arrUrlWithBaseDir = {};
+  const arrUrlWithBaseDir = {};
 
   if(typeof _ARR_DIR_CHILD[baseDir] === 'object') {
     arrUrlWithBaseDir.base = _strAppDirUrl + _ARR_DIR_CHILD['parent_dir'] +  '/' + baseDir;

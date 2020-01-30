@@ -1,0 +1,16 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "declaration": true,
+    "baseUrl": "./",
+    "paths": {
+      "@common/*": ["app/common/*"],
+      "@common/enum/*": ["app/common/enum/*"],
+      "@common/define/*": ["app/common/define/*"],
+      "@common/util/*": ["app/common/util/*"]
+    },
+    "typeRoots": ["./node_modules/@types","./app/common"]
+  }
+}

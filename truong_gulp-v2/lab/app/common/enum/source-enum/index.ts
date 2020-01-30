@@ -1,10 +1,8 @@
-declare let APP_SRC_PATH: string; // url của source directory (nơi để dev)
-APP_SRC_PATH = './test/';
+const APP_SRC_PATH: string = './src/'; // url của source directory (nơi để dev)
 
-declare let APP_TMP_PATH: string; // url của temp directory (nơi để built source deploy)
-APP_TMP_PATH = './tmp/';
-declare let APP_DIST_PATH: string; // url của dist directory (nơi chứa source production live)
-APP_DIST_PATH = './dist/';
+const APP_TMP_PATH: string = './tmp/'; // url của temp directory (nơi để built source deploy)
+
+const APP_DIST_PATH: string = './dist/'; // url của dist directory (nơi chứa source production live)
 
 interface AppItemConstruct {
   path: string,
@@ -23,9 +21,7 @@ interface AppConstruct {
   dist: AppItemConstruct,
 };
 
-declare let APP: AppConstruct;
-
-APP = {
+const APP: AppConstruct = {
   src: {
     path: APP_SRC_PATH,
     scss : APP_SRC_PATH + 'scss',
@@ -49,6 +45,6 @@ APP = {
     js : APP_DIST_PATH + 'js',
     images : APP_DIST_PATH + 'images',
   }
-}
+};
 
 export default APP;
