@@ -1,8 +1,8 @@
-const APP_SRC_PATH: string = './src/'; // url của source directory (nơi để dev)
+const _APP_SRC_PATH: string = './src/'; // url của source directory (nơi để dev)
 
-const APP_TMP_PATH: string = './tmp/'; // url của temp directory (nơi để built source deploy)
+const _APP_TMP_PATH: string = './tmp/'; // url của temp directory (nơi để built source deploy)
 
-const APP_DIST_PATH: string = './dist/'; // url của dist directory (nơi chứa source production live)
+const _APP_DIST_PATH: string = './dist/'; // url của dist directory (nơi chứa source production live)
 
 interface AppItemConstruct {
   path: string,
@@ -10,6 +10,7 @@ interface AppItemConstruct {
   css?: string,
   js: string,
   images: string,
+  fonts: string,
   njk?: string,
   data?: string,
   urlConfig?: string,
@@ -23,27 +24,30 @@ interface AppConstruct {
 
 const APP: AppConstruct = {
   src: {
-    path: APP_SRC_PATH,
-    scss : APP_SRC_PATH + 'scss',
-    js : APP_SRC_PATH + 'js',
-    images : APP_SRC_PATH + 'images',
-    njk : APP_SRC_PATH + 'njk',
-    data : APP_SRC_PATH + 'data',
-    urlConfig : APP_SRC_PATH + 'urlConfig',
+    path : _APP_SRC_PATH,
+    scss : _APP_SRC_PATH + 'scss',
+    js : _APP_SRC_PATH + 'js',
+    images : _APP_SRC_PATH + 'images',
+    fonts : _APP_SRC_PATH + 'fonts',
+    njk : _APP_SRC_PATH + 'njk',
+    data : _APP_SRC_PATH + 'data',
+    urlConfig : _APP_SRC_PATH + 'urlConfig',
   },
 
   tmp: {
-    path : APP_TMP_PATH,
-    css : APP_TMP_PATH + 'css',
-    js : APP_TMP_PATH + 'js',
-    images : APP_TMP_PATH + '/images',
+    path : _APP_TMP_PATH,
+    css : _APP_TMP_PATH + 'css',
+    js : _APP_TMP_PATH + 'js',
+    images : _APP_TMP_PATH + 'images',
+    fonts : _APP_TMP_PATH + 'fonts',
   },
 
   dist: {
-    path : APP_DIST_PATH,
-    css : APP_DIST_PATH + 'css',
-    js : APP_DIST_PATH + 'js',
-    images : APP_DIST_PATH + 'images',
+    path : _APP_DIST_PATH,
+    css : _APP_DIST_PATH + 'css',
+    js : _APP_DIST_PATH + 'js',
+    images : _APP_DIST_PATH + 'images',
+    fonts : _APP_DIST_PATH + 'fonts',
   }
 };
 

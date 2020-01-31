@@ -19,10 +19,21 @@
     "typescript": "^3.7.5"
   },
   "devDependencies": {
+    "ansi-colors": "^4.1.1",
+    "browser-sync": "^2.26.7",
+    "browserify": "^16.5.0",
+    "event-stream": "^4.0.1",
+    "glob": "^7.1.6",
     "gulp-cached": "^1.1.1",
     "gulp-clean": "^0.4.0",
     "gulp-copy": "^4.0.1",
-    "gulp-sass": "^4.0.2"
+    "gulp-dependents": "^1.2.3",
+    "gulp-plumber": "^1.2.1",
+    "gulp-prettier": "^2.3.0",
+    "gulp-print": "^5.0.2",
+    "gulp-rename": "^2.0.0",
+    "gulp-sass": "^4.0.2",
+    "vinyl-source-stream": "^2.0.0"
   },
   "_comment": "định nghĩa shorthand url directory local, sử dụng module-alias package",
   "_moduleAliases": {
