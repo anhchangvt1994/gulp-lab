@@ -1,5 +1,5 @@
 import 'tsconfig-paths/register';
-import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssDistTask } from '@common/util/gulp-task-util';
+import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssDistTask, compileJsTask, compileJsCommonTask, compileJsLibTask, prettierJsTmpTask, convertNunjuckTask, prettierHtmlTask } from '@common/util/gulp-task-util';
 const gulp = require('gulp');
 
 //! ANCHOR - cleanTask
@@ -21,12 +21,52 @@ convertSassTask.dist.init();
 //? chỉ sử dụng prettier css cho source css trong thư mục dist
 prettierCssDistTask.init();
 
+//! ANCHOR - compileJsTask
+//-- compile js into tmp
+compileJsTask.tmp.init();
+
+//-- compile js into dist
+compileJsTask.dist.init();
+
 //! ANCHOR - copyFontsTask
 //-- copy fonts to tmp
 copyFontsTask.tmp.init();
 
 //-- copy fonts to dist
 copyFontsTask.dist.init();
+
+//! ANCHOR - compileJsCommonTask
+//-- compile common js into tmp
+compileJsCommonTask.tmp.init();
+
+//-- compile common js into dist
+compileJsCommonTask.dist.init();
+
+//! ANCHOR - compileJsLibTask
+//-- compile lib js into tmp
+compileJsLibTask.tmp.init();
+
+//-- compile lib js into dist
+compileJsLibTask.dist.init();
+
+//! ANCHOR - prettierJsTmpTask
+//-- compile lib js into tmp
+//? chỉ sử dụng cho js của tmp dir
+prettierJsTmpTask.init();
+
+//! ANCHOR - convertNunjuckTask
+//-- convert nunjuck to html into tmp
+convertNunjuckTask.tmp.init();
+
+//-- convert nunjuck to html into dist
+convertNunjuckTask.dist.init();
+
+//! ANCHOR - prettierHtmlTask
+//-- prettier html tmp
+prettierHtmlTask.tmp.init();
+
+//-- prettier html dist
+prettierHtmlTask.dist.init();
 
 //! ANCHOR - copyImagesTask
 //-- copy images to tmp
@@ -45,7 +85,15 @@ gulp.task('dev', gulp.series(
   gulp.parallel(
     convertSassTask.tmp.name,
     copyFontsTask.tmp.name,
+    compileJsLibTask.tmp.name,
+    compileJsTask.tmp.name,
+    compileJsCommonTask.tmp.name,
     copyImagesTask.name,
+  ),
+  convertNunjuckTask.tmp.name,
+  gulp.parallel(
+    prettierJsTmpTask.name,
+    prettierHtmlTask.tmp.name,
   ),
   gulp.parallel(
     browserSyncTask.name,
@@ -62,8 +110,13 @@ gulp.task('prod', gulp.series(
   gulp.parallel(
     convertSassTask.dist.name,
     copyFontsTask.dist.name,
+    compileJsLibTask.dist.name,
+    compileJsTask.dist.name,
+    compileJsCommonTask.dist.name,
   ),
+  convertNunjuckTask.dist.name,
   gulp.parallel(
     prettierCssDistTask.name,
+    prettierHtmlTask.dist.name,
   ),
 ));

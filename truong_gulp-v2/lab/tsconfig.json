@@ -9,7 +9,8 @@
       "@common/*": ["app/common/*"],
       "@common/enum/*": ["app/common/enum/*"],
       "@common/define/*": ["app/common/define/*"],
-      "@common/util/*": ["app/common/util/*"]
+      "@common/util/*": ["app/common/util/*"],
+      "@common/config/*": ["app/common/config/*"]
     },
     "typeRoots": ["./node_modules/@types","./app/common"]
   }

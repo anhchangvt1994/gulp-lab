@@ -16,6 +16,10 @@ const es = require('event-stream');
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
 const rename = require('gulp-rename');
+const buffer = require('vinyl-buffer');
+const uglify = require('gulp-uglify');
+const data = require('gulp-data');
+const nunjucksRender = require('gulp-nunjucks-render');
 
 export default {
   gulp,
@@ -36,4 +40,8 @@ export default {
   browserify,
   source,
   rename,
+  buffer,
+  uglify,
+  data,
+  nunjucksRender,
 }

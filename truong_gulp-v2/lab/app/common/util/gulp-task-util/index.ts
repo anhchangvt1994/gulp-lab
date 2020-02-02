@@ -2,6 +2,86 @@ import modules from '@common/define/module-define';
 import generatePathUrl from '@common/enum/task-path-enum';
 import APP from '@common/enum/source-enum';
 
+import RESOURCE from '@common/config/resource-config';
+
+/* --------------------------------- METHOD --------------------------------- */
+//! ANCHOR - move file method
+//? sử dụng để move file từ source sang dir khác
+interface ArrMoveFilesConfigConstruct {
+  'sourcePathUrl': string,
+  'targetPathUrl': string,
+};
+
+const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
+  return modules.gulp.src(arrMoveFilesConfig.sourcePathUrl)
+    .pipe(modules.plumber())
+    .pipe(modules.cached('js'))
+    .pipe(modules.dependents())
+    .pipe(modules.print(
+      filepath => `built: ${filepath}`
+    ))
+    .pipe(modules.gulp.dest(arrMoveFilesConfig.targetPathUrl));
+};
+
+//! ANCHOR - compile js method
+//-- compile js tmp execute method
+const __compileJsTmp = function(filesbox,done) {
+  modules.glob(filesbox, function (err, files) {
+    if(err) done(err);
+    var filename,foldername;
+
+    var tasks = files.map(function(entry) {
+      filename = entry.split('/')[entry.split('/').length - 1];
+      foldername = entry.split('/')[entry.split('/').length - 2];
+
+      return modules.browserify({entries: [entry]})
+      .transform("babelify",{presets: ['@babel/env']})
+      .bundle()
+      .pipe(modules.source(filename))
+      .pipe(modules.rename(
+        foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
+      ))
+      .pipe(modules.cached('js'))
+      .pipe(modules.dependents())
+      .pipe(modules.print(
+        filepath => `built: ${filepath}`
+      ))
+      .pipe(modules.gulp.dest(APP.tmp.js))
+      .pipe(modules.browserSync.reload({ stream: true }));
+    });
+
+    modules.es.merge(tasks).on('end', done);
+  });
+};
+
+//-- compile js dist execute method
+const __compileJsDist = function(filesbox,done) {
+  modules.glob(filesbox, function (err, files) {
+    if(err) done(err);
+    var filename,foldername;
+
+    var tasks = files.map(function(entry) {
+      filename = entry.split('/')[entry.split('/').length - 1];
+      foldername = entry.split('/')[entry.split('/').length - 2];
+
+      return modules.browserify({entries: [entry]})
+      .transform("babelify",{presets: ['@babel/env']})
+      .bundle()
+      .pipe(modules.source(filename))
+      .pipe(modules.rename(
+        foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
+      ))
+      .pipe(modules.buffer())
+      .pipe(modules.uglify())
+      .pipe(modules.gulp.dest(APP.dist.js));
+    });
+
+    modules.es.merge(tasks).on('end', done);
+  });
+};
+/* -------------------------------------------------------------------------- */
+
+/* ---------------------------------- TASK ---------------------------------- */
 //! ANCHOR - cleanTask
 //-- clean tmp task
 const _cleanTmpTask = function() {
@@ -36,7 +116,7 @@ export const copyImagesTask = {
   'name': 'copyImages',
   'init': function() {
     modules.gulp.task('copyImages', function() {
-      return modules.gulp.src(APP.src.images + '**/*.{jpg,png,gif,svg,ico}')
+      return modules.gulp.src(APP.src.images + '/**/*.{jpg,png,gif,svg,ico}')
       .pipe(modules.copy(
         APP.tmp.images,
         {
@@ -60,7 +140,7 @@ interface ArrTaskConfigConstruct {
 const _copyFontsTask = function(arrTaskConfig: ArrTaskConfigConstruct) {
   modules.gulp.task(arrTaskConfig.name, function() {
     let arrUrl;
-    return modules.gulp.src(APP.src.fonts + '**/*.{svg,eot,otf,ttf,woff,woff2}')
+    return modules.gulp.src(APP.src.fonts + '/**/*.{svg,eot,otf,ttf,woff,woff2}')
     .pipe(modules.cached('fonts'))
     .pipe(modules.print((filepath) => {
       arrUrl = filepath.split('\\');
@@ -103,7 +183,7 @@ export const copyFontsTask = {
 const _convertSassTmpTask = function() {
   modules.gulp.task('sassTmp', function() {
     let arrUrl;
-    return modules.gulp.src(APP.src.scss + '**/*.{scss,css}')
+    return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
     .pipe(modules.plumber(function(err) {
       console.log(modules.ansiColors.red(err.message));
     }))
@@ -124,7 +204,7 @@ const _convertSassTmpTask = function() {
 //-- convert sass to css into dist
 const _convertSassDistTask = function() {
   modules.gulp.task('sassDist', function() {
-    return modules.gulp.src(APP.src.scss + '*.{scss,css}')
+    return modules.gulp.src(APP.src.scss + '/*.{scss,css}')
     .pipe(modules.plumber())
     .pipe(modules.sass({ outputStyle: 'compressed' }))
     .pipe(modules.gulp.dest(APP.dist.css));
@@ -149,7 +229,7 @@ export const prettierCssDistTask = {
   'name': 'prettierCssDist',
   'init': function() {
     modules.gulp.task('prettierCssDist', function() {
-      return modules.gulp.src(APP.dist.css + '*.css')
+      return modules.gulp.src(APP.dist.css + '/*.css')
       .pipe(modules.cached('scss'))
       .pipe(modules.prettier({
         singleQuote: true
@@ -161,33 +241,187 @@ export const prettierCssDistTask = {
 
 //! ANCHOR - compileJsTask
 //-- compile js into tmp
-const __compileJsTmp = function(filesbox,done) {
-  modules.glob(filesbox, function (err, files) {
-    if(err) done(err);
-    var filename,foldername;
+const _compileJsTmpTask = function() {
+  modules.gulp.task('jsTmp', function(done) {
+    __compileJsTmp(APP.src.js + '/**/index.js', done);
+  });
+};
 
-    var tasks = files.map(function(entry) {
-      filename = entry.split('/')[entry.split('/').length - 1];
-      foldername = entry.split('/')[entry.split('/').length - 2];
 
-      return modules.browserify({entries: [entry]})
-      .transform("babelify",{presets: ['@babel/env']})
-      .bundle()
-      .pipe(modules.source(filename))
-      .pipe(modules.rename(
-        foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
-      ))
+//-- compile js into dist
+const _compileJsDistTask = function() {
+  modules.gulp.task('jsDist', function(done) {
+    __compileJsDist(APP.src.js + '/**/index.js', done);
+  });
+};
+
+export const compileJsTask = {
+  'tmp': {
+    'name': 'jsTmp',
+    'init': _compileJsTmpTask,
+  },
+  'dist': {
+    'name': 'jsDist',
+    'init': _compileJsDistTask
+  }
+};
+
+//! ANCHOR - compileJsCommonTask
+//-- compile common js into tmp
+const _compileJsCommonTmpTask = function() {
+  modules.gulp.task('jsCommonTmp', function(done) {
+    __compileJsTmp(APP.src.js + 'common.js', done);
+  });
+};
+
+//-- compile common js into dist
+const _compileJsCommonDistTask = function() {
+  modules.gulp.task('jsCommonDist', function(done) {
+    __compileJsDist(APP.src.js + 'common.js', done);
+  });
+};
+
+export const compileJsCommonTask = {
+  'tmp': {
+    'name': 'jsCommonTmp',
+    'init': _compileJsCommonTmpTask,
+  },
+  'dist': {
+    'name': 'jsCommonDist',
+    'init': _compileJsCommonDistTask,
+  }
+};
+
+//! ANCHOR - compileJsLibTask
+//-- compile lib js into tmp and dist
+export const compileJsLibTask  = {
+  'tmp': {
+    'name': 'jsLibTmp',
+    'init': function() {
+      modules.gulp.task('jsLibTmp', function() {
+        return __moveFiles({
+          'sourcePathUrl': APP.src.js + '/libs/*.js',
+          'targetPathUrl': APP.tmp.js + '/libs/',
+        });
+      });
+    },
+  },
+  'dist': {
+    'name': 'jsLibDist',
+    'init': function() {
+      modules.gulp.task('jsLibDist', function() {
+        return __moveFiles({
+          'sourcePathUrl': APP.src.js + '/libs/*.js',
+          'targetPathUrl': APP.dist.js + '/libs/',
+        });
+      })
+    },
+  }
+};
+
+//! ANCHOR - prettierJsTmpTask
+//-- compile lib js into tmp
+//? chỉ sử dụng cho js của tmp dir
+export const prettierJsTmpTask = {
+  'name': 'prettierJsTmp',
+  'init': function() {
+    modules.gulp.task('prettierJsTmp', function() {
+      return modules.gulp.src(APP.tmp.js + '/*.js')
       .pipe(modules.cached('js'))
       .pipe(modules.dependents())
+      .pipe(modules.prettier())
       .pipe(modules.print(
-        filepath => `built: ${filepath}`
+        filepath => `prettier js: ${filepath}`
       ))
       .pipe(modules.gulp.dest(APP.tmp.js))
-      .pipe(modules.browserSync.reload({ stream: true }));
     });
+  }
+}
 
-    modules.es.merge(tasks).on('end', done);
+//! ANCHOR - convertNunjuckTask
+//-- convert nunjuck to html into tmp
+const _convertNunjuckTmpTask = function() {
+  modules.gulp.task('njkTmp', function() {
+
+    return modules.gulp.src(APP.src.njk + '/*.njk')
+    .pipe(modules.data((file) => ({namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk','')})))
+    .pipe(modules.nunjucksRender({
+      path: [APP.src.njk],
+      ext: '.html',
+      data: {
+        objGlobal: RESOURCE,
+        intRandomNumber : Math.random() * 10
+      }
+    }))
+    .pipe(modules.cached('html'))
+    .pipe(modules.dependents())
+    .pipe(modules.print(
+      filepath => `built: ${filepath}`
+    ))
+    .pipe(modules.gulp.dest(APP.tmp.path))
+    .pipe(modules.browserSync.reload({ stream: true }));
   });
+};
+
+//-- convert nunjuck to html into dist
+const _convertNunjuckTmpDist = function() {
+  modules.gulp.task('njkDist', function() {
+    return modules.gulp.src(APP.src.njk + '/*.njk')
+    .pipe(modules.nunjucksRender({
+      path: [APP.src.njk],
+      ext: '.html',
+      data : {
+        objGlobal: RESOURCE,
+        intRandomNumber : Math.random() * 10
+      }
+    }))
+    .pipe(modules.gulp.dest(APP.dist.path));
+  });
+};
+
+export const convertNunjuckTask = {
+  'tmp': {
+    'name': 'njkTmp',
+    'init': _convertNunjuckTmpTask,
+  },
+  'dist': {
+    'name': 'njkDist',
+    'init': _convertNunjuckTmpDist,
+  },
+};
+
+//! ANCHOR - prettierHtmlTask
+//-- prettier html tmp
+const _prettierHtmlTmpTask = function() {
+  modules.gulp.task('prettierHtmlTmp', function() {
+    return modules.gulp.src(APP.tmp.path + '*.html')
+    .pipe(modules.prettier({
+      singleQuote: true
+    }))
+    .pipe(modules.gulp.dest(APP.tmp.path))
+  });
+};
+
+//-- prettier html dist
+const _prettierHtmlDistTask = function() {
+  modules.gulp.task('prettierHtmlDist', function() {
+    return modules.gulp.src(APP.dist.path + '*.html')
+    .pipe(modules.prettier({
+      singleQuote: true
+    }))
+    .pipe(modules.gulp.dest(APP.dist.path))
+  });
+};
+
+export const prettierHtmlTask = {
+  'tmp': {
+    'name': 'prettierHtmlTmp',
+    'init': _prettierHtmlTmpTask,
+  },
+  'dist': {
+    'name': 'prettierHtmlDist',
+    'init': _prettierHtmlDistTask,
+  },
 };
 
 //! ANCHOR - browserSyncTask
@@ -196,7 +430,7 @@ const __compileJsTmp = function(filesbox,done) {
 export const browserSyncTask = {
   'name': 'browserSync',
   'init': function() {
-    modules.gulp.task("browser-sync", function() {
+    modules.gulp.task("browserSync", function() {
       return modules.browserSync.init({
         reloadDelay: 300, // Fix htmlprocess watch not change
         open: false, // Stop auto open browser
@@ -226,3 +460,4 @@ export const browserSyncTask = {
     }); // end modules.gulp
   },
 };
+/* -------------------------------------------------------------------------- */
