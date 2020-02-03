@@ -1,6 +1,7 @@
 import 'tsconfig-paths/register';
-import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssDistTask, compileJsTask, compileJsCommonTask, compileJsLibTask, prettierJsTmpTask, convertNunjuckTask, prettierHtmlTask } from '@common/util/gulp-task-util';
-const gulp = require('gulp');
+import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssTmpTask, compileJsTask, compileJsCommonTask, compileJsLibTask, prettierJsTmpTask, convertNunjuckTask, prettierHtmlTask } from '@common/util/gulp-task-util';
+import { watchTmpTask } from '@common/util/watch-task-util';
+import gulp = require('gulp');
 
 //! ANCHOR - cleanTask
 //-- clean tmp task
@@ -16,10 +17,10 @@ convertSassTask.tmp.init();
 //-- convert sass to css into dist
 convertSassTask.dist.init();
 
-//! ANCHOR - prettierCssDist
+//! ANCHOR - prettierCssTmpTask
 //-- prettier css in dist
-//? chỉ sử dụng prettier css cho source css trong thư mục dist
-prettierCssDistTask.init();
+//? chỉ sử dụng prettier css cho source css trong thư mục tmp
+prettierCssTmpTask.init();
 
 //! ANCHOR - compileJsTask
 //-- compile js into tmp
@@ -73,6 +74,10 @@ prettierHtmlTask.dist.init();
 //? chỉ dùng khi build vào tmp folder
 copyImagesTask.init();
 
+//! ANCHOR  - watchTmpTask
+//-- watch tmp files change task
+watchTmpTask.init();
+
 //! ANCHOR - browserSyncTask
 //-- browserSync task
 browserSyncTask.init();
@@ -92,10 +97,12 @@ gulp.task('dev', gulp.series(
   ),
   convertNunjuckTask.tmp.name,
   gulp.parallel(
+    prettierCssTmpTask.name,
     prettierJsTmpTask.name,
     prettierHtmlTask.tmp.name,
   ),
   gulp.parallel(
+    watchTmpTask.name,
     browserSyncTask.name,
   )
 ));
@@ -116,7 +123,6 @@ gulp.task('prod', gulp.series(
   ),
   convertNunjuckTask.dist.name,
   gulp.parallel(
-    prettierCssDistTask.name,
     prettierHtmlTask.dist.name,
   ),
 ));

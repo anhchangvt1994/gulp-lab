@@ -1,25 +1,27 @@
-const gulp = require('gulp');
-const clean = require('gulp-clean');
-const copy = require('gulp-copy');
-const sass = require('gulp-sass');
+import gulp = require('gulp');
+import clean = require('gulp-clean');
+import copy = require('gulp-copy');
+import sass = require('gulp-sass');
 
 //-- sub dependencies
-const plumber = require('gulp-plumber');
-const cached = require('gulp-cached');
-const ansiColors = require('ansi-colors');
-const dependents = require('gulp-dependents');
-const print = require('gulp-print').default;
-const browserSync = require('browser-sync').create();
-const prettier = require('gulp-prettier');
-const glob = require('glob');
-const es = require('event-stream');
-const browserify = require('browserify');
-const source = require('vinyl-source-stream');
-const rename = require('gulp-rename');
-const buffer = require('vinyl-buffer');
-const uglify = require('gulp-uglify');
-const data = require('gulp-data');
-const nunjucksRender = require('gulp-nunjucks-render');
+import plumber = require('gulp-plumber');
+import cached = require('gulp-cached');
+import ansiColors = require('ansi-colors');
+import dependents = require('gulp-dependents');
+import print = require('gulp-print');
+import browserSync = require('browser-sync');
+import prettier = require('gulp-prettier');
+import glob = require('glob');
+import es = require('event-stream');
+import browserify = require('browserify');
+import source = require('vinyl-source-stream');
+import rename = require('gulp-rename');
+import buffer = require('vinyl-buffer');
+import uglify = require('gulp-uglify');
+import data = require('gulp-data');
+import nunjucksRender = require('gulp-nunjucks-render');
+import del = require('del');
+import path = require('path');
 
 export default {
   gulp,
@@ -32,8 +34,8 @@ export default {
   ansiColors,
   cached,
   dependents,
-  print,
-  browserSync,
+  print: print.default,
+  browserSync: browserSync.create(),
   prettier,
   glob,
   es,
@@ -44,4 +46,6 @@ export default {
   uglify,
   data,
   nunjucksRender,
+  del,
+  path,
 }

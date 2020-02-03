@@ -116,7 +116,10 @@ export const copyImagesTask = {
   'name': 'copyImages',
   'init': function() {
     modules.gulp.task('copyImages', function() {
-      return modules.gulp.src(APP.src.images + '/**/*.{jpg,png,gif,svg,ico}')
+      return modules.gulp.src(APP.src.images + '**/*.{jpg,png,gif,svg,ico}')
+      .pipe(modules.plumber())
+      .pipe(modules.cached('jpg,png,gif,svg,ico'))
+      .pipe(modules.dependents())
       .pipe(modules.copy(
         APP.tmp.images,
         {
@@ -125,7 +128,11 @@ export const copyImagesTask = {
             vd: từ FADO_EMAIL-V2 vào dist/images thì phải qua 2 cấp thư mục dist/images
           */
         }
-      ));
+      ))
+      .pipe(modules.print(
+        filepath => `built: ${filepath}`
+      ))
+      .pipe(modules.browserSync.reload({ stream: true }));
     });
   }
 };
@@ -222,19 +229,23 @@ export const convertSassTask = {
   },
 };
 
-//! ANCHOR - prettierCssDistTask
+//! ANCHOR - prettierCssTmpTask
 //-- prettier css in dist
-//? chỉ sử dụng prettier css cho source css trong thư mục dist
-export const prettierCssDistTask = {
-  'name': 'prettierCssDist',
+//? chỉ sử dụng prettier css cho source css trong thư mục tmp
+export const prettierCssTmpTask = {
+  'name': 'prettierCssTmp',
   'init': function() {
-    modules.gulp.task('prettierCssDist', function() {
-      return modules.gulp.src(APP.dist.css + '/*.css')
+    modules.gulp.task('prettierCssTmp', function() {
+      return modules.gulp.src(APP.tmp.css + '*.css')
       .pipe(modules.cached('scss'))
+      .pipe(modules.dependents())
       .pipe(modules.prettier({
         singleQuote: true
       }))
-      .pipe(modules.gulp.dest(APP.dist.css))
+      .pipe(modules.print(
+        filepath => `prettier css: ${filepath}`
+      ))
+      .pipe(modules.gulp.dest(APP.tmp.css))
     });
   }
 };

@@ -23,6 +23,7 @@
     "babelify": "^10.0.0",
     "browser-sync": "^2.26.7",
     "browserify": "^16.5.0",
+    "del": "^5.1.0",
     "event-stream": "^4.0.1",
     "glob": "^7.1.6",
     "gulp-cached": "^1.1.1",
@@ -39,5 +40,5 @@
     "gulp-uglify": "^3.0.2",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
-  },
+  }
 }
