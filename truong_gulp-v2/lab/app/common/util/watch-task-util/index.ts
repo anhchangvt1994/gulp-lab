@@ -4,6 +4,42 @@ import gulp = require('gulp');
 import del = require('del');
 import path = require('path');
 
+/* --------------------------------- METHOD --------------------------------- */
+//! ANCHOR - __groupWatchFiles
+//-- Tạo ra method chứa những task watch có liên quan với nhau, dùng để xử lý 1 gulp task vd gulp task images hay gulp task fonts
+interface arrWatchFilesConfigConstruct {
+  'sourcePathUrl': string,
+  'relativeTaskName': string,
+};
+
+const __groupWatchFiles = function(arrWatchFilesConfig: arrWatchFilesConfigConstruct) {
+  //-- khi rename files
+  gulp.watch(arrWatchFilesConfig.sourcePathUrl, gulp.series(
+    convertNunjuckTask.tmp.name,
+    prettierHtmlTask.tmp.name,
+  ));
+
+  //-- khi thêm files
+  gulp.watch(arrWatchFilesConfig.sourcePathUrl,
+  {events : ['add','change']},
+  gulp.series(
+    arrWatchFilesConfig.relativeTaskName,
+  ));
+
+  //-- khi xóa files
+  const watchDelImages = gulp.watch(arrWatchFilesConfig.sourcePathUrl);
+
+  watchDelImages.on('unlink', function(filepath) {
+    const filePathFromSrc = path.relative(path.resolve('src'),filepath);
+    const destFilePath = path.resolve(APP.tmp.path, filePathFromSrc);
+
+    del.sync(destFilePath);
+  });
+};
+
+/* -------------------------------------------------------------------------- */
+
+
 /* ---------------------------------- TASK ---------------------------------- */
 //! ANCHOR - watchScssTask
 //-- watch scss files change task
@@ -19,6 +55,15 @@ const _watchScssTask = function() {
 export const watchScssTask = {
   'name': '',
   'init': _watchScssTask,
+};
+
+//! ANCHOR  - watchFontsTask
+//-- watch font files change task
+const _watchFontsTask = function() {
+  __groupWatchFiles({
+    'sourcePathUrl': APP.src.fonts + '/**/*.{svg,eot,otf,ttf,woff,woff2}',
+    'relativeTaskName': copyFontsTask.tmp.name,
+  });
 };
 
 //! ANCHOR  - watchJsTask
@@ -51,32 +96,12 @@ export const watchNunjuckTask = {
   'init': _watchNunjuckTask,
 };
 
-//!TODO - watchFontsTask
-
 //! ANCHOR  - watchImagesTask
 //-- watch image files change task
 const _watchImagesTask = function() {
-  //-- khi rename images
-  gulp.watch(APP.src.images + '**/*.{jpg,png,gif,svg,ico}', gulp.series(
-    convertNunjuckTask.tmp.name,
-    prettierHtmlTask.tmp.name,
-  ));
-
-  //-- khi thêm images
-  gulp.watch(APP.src.images + '**/*.{jpg,png,gif,svg,ico}',
-  {events : ['add','change']},
-  gulp.series(
-    copyImagesTask.name,
-  ));
-
-  //-- khi xóa images
-  const watchDelImages = gulp.watch(APP.src.images + '**/*.{jpg,png,gif,svg,ico}');
-
-  watchDelImages.on('unlink', function(filepath) {
-    const filePathFromSrc = path.relative(path.resolve('src'),filepath);
-    const destFilePath = path.resolve(APP.tmp.path, filePathFromSrc);
-
-    del.sync(destFilePath);
+  __groupWatchFiles({
+    'sourcePathUrl': APP.src.images + '**/*.{jpg,png,gif,svg,ico}',
+    'relativeTaskName': copyImagesTask.name,
   });
 };
 
@@ -90,6 +115,7 @@ export const watchImagesTask = {
 const _watchTmpTask = function() {
   gulp.task('watch', function() {
     _watchScssTask();
+    _watchFontsTask();
     _watchJsTask();
     _watchNunjuckTask();
     _watchImagesTask();

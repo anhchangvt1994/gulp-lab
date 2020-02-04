@@ -5,7 +5,7 @@ import APP from '@common/enum/source-enum';
 import RESOURCE from '@common/config/resource-config';
 
 /* --------------------------------- METHOD --------------------------------- */
-//! ANCHOR - move file method
+//! ANCHOR - __moveFiles
 //? sử dụng để move file từ source sang dir khác
 interface ArrMoveFilesConfigConstruct {
   'sourcePathUrl': string,
@@ -23,7 +23,7 @@ const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
     .pipe(modules.gulp.dest(arrMoveFilesConfig.targetPathUrl));
 };
 
-//! ANCHOR - compile js method
+//! ANCHOR - __compileJsTmp
 //-- compile js tmp execute method
 const __compileJsTmp = function(filesbox,done) {
   modules.glob(filesbox, function (err, files) {
