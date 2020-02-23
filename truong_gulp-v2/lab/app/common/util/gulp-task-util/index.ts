@@ -1,8 +1,8 @@
 import modules from '@common/define/module-define';
 import generatePathUrl from '@common/enum/task-path-enum';
 import APP from '@common/enum/source-enum';
-
 import RESOURCE from '@common/config/resource-config';
+import DATA from '@source-data';
 
 /* --------------------------------- METHOD --------------------------------- */
 //! ANCHOR - __moveFiles
@@ -41,8 +41,6 @@ const __compileJsTmp = function(filesbox,done) {
       .pipe(modules.rename(
         foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
       ))
-      .pipe(modules.cached('js'))
-      .pipe(modules.dependents())
       .pipe(modules.print(
         filepath => `built: ${filepath}`
       ))
@@ -254,7 +252,14 @@ export const prettierCssTmpTask = {
 //-- compile js into tmp
 const _compileJsTmpTask = function() {
   modules.gulp.task('jsTmp', function(done) {
-    __compileJsTmp(APP.src.js + '/**/index.js', done);
+    return modules.gulp.src(APP.src.js + '/**/index.js')
+    .pipe(modules.changed(APP.tmp.js))
+    .pipe(modules.dependents())
+    .pipe(modules.print(
+      filepath => `built: ${filepath}`
+    ))
+    .pipe(modules.gulp.dest(APP.tmp.js));
+    // __compileJsTmp(APP.src.js + '/**/index.js', done);
   });
 };
 
@@ -355,7 +360,12 @@ const _convertNunjuckTmpTask = function() {
   modules.gulp.task('njkTmp', function() {
 
     return modules.gulp.src(APP.src.njk + '/*.njk')
-    .pipe(modules.data((file) => ({namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk','')})))
+    .pipe(modules.data((file) => (
+      {
+        namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
+        data: DATA,
+      }
+    )))
     .pipe(modules.nunjucksRender({
       path: [APP.src.njk],
       ext: '.html',

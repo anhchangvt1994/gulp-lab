@@ -21,7 +21,7 @@ const RESOURCE: ResourceConstruct = {
     "arrJsFile": []
   },
 
-  "text" : {
+  "text-page" : {
     "arrCssFile" : [
       "text-style"
     ],
@@ -31,7 +31,7 @@ const RESOURCE: ResourceConstruct = {
     ]
   },
 
-  "introduction" : {
+  "introduction-page" : {
     "arrCssFile" : [
       "introduction-style"
     ],

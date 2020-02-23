@@ -44,7 +44,7 @@ const __groupWatchFiles = function(arrWatchFilesConfig: arrWatchFilesConfigConst
 //! ANCHOR - watchScssTask
 //-- watch scss files change task
 const _watchScssTask = function() {
-  gulp.watch(APP.src.scss + '**/*.scss', gulp.series(
+  gulp.watch(APP.src.scss + '/**/*.scss', gulp.series(
     convertSassTask.tmp.name,
     prettierCssTmpTask.name,
     convertNunjuckTask.tmp.name,
@@ -69,7 +69,7 @@ const _watchFontsTask = function() {
 //! ANCHOR  - watchJsTask
 //-- watch js files change task
 const _watchJsTask = function() {
-  gulp.watch(APP.src.js + '**/*.js', gulp.series(
+  gulp.watch(APP.src.js + '/**/*.js', gulp.series(
     compileJsTask.tmp.name,
     prettierJsTmpTask.name,
     convertNunjuckTask.tmp.name,

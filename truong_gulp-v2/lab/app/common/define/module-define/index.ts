@@ -6,6 +6,7 @@ import sass = require('gulp-sass');
 //-- sub dependencies
 import plumber = require('gulp-plumber');
 import cached = require('gulp-cached');
+import changed = require('gulp-changed');
 import ansiColors = require('ansi-colors');
 import dependents = require('gulp-dependents');
 import print = require('gulp-print');
@@ -33,6 +34,7 @@ export default {
   plumber,
   ansiColors,
   cached,
+  changed,
   dependents,
   print: print.default,
   browserSync: browserSync.create(),
