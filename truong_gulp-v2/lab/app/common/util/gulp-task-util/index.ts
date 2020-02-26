@@ -258,25 +258,34 @@ const _compileJsTmpTask = function() {
   modules.gulp.task('jsTmp', function(done) {
     // __compileJsTmp(APP.src.js + '/**/index.js', done);
 
-    return modules.gulp.src(APP.src.js + '/**/index.js')
+    return modules.gulp.src(APP.src.js + '/**/*.js')
+    .pipe(modules.cached('js'))
+    .pipe(modules.dependents())
     .pipe(modules.tap(function(file) {
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
       const filename = file.path.split('\\').slice(-2)[1];
       const foldername = file.path.split('\\').slice(-2)[0];
 
-      modules.gulp.src(file.path)
-      .pipe(modules.gulpBrowserify(
-        {
-          entries: [file.path],
-          transform: modules.babelify.configure({
-            presets: ["@babel/env"]
-          })
-        }
-      ))
-      .pipe(modules.rename(
-        foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
-      ))
-      .pipe(modules.gulp.dest(APP.tmp.js));
+      if(filename === 'index.js') {
+        modules.gulp.src(file.path)
+        .pipe(modules.gulpBrowserify(
+          {
+            entries: [file.path],
+            transform: modules.babelify.configure({
+              presets: ["@babel/env"]
+            })
+          }
+        ))
+        .pipe(modules.rename(
+          foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
+        ))
+        .pipe(modules.print(
+          filepath => `compile js: ${filepath}`
+        ))
+        .pipe(
+          modules.gulp.dest(APP.tmp.js)
+        );
+      }
     }));
   });
 };
