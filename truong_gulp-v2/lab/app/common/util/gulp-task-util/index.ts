@@ -31,13 +31,17 @@ const __compileJsTmp = function(filesbox,done) {
     var filename,foldername;
 
     var tasks = files.map(function(entry) {
+      console.log(entry);
+      console.log('--------------------------------------');
       filename = entry.split('/')[entry.split('/').length - 1];
       foldername = entry.split('/')[entry.split('/').length - 2];
 
-      return modules.browserify({entries: [entry]})
+      return modules.browserify({entries: [entry], cache: {}})
       .transform("babelify",{presets: ['@babel/env']})
       .bundle()
       .pipe(modules.source(filename))
+      .pipe(modules.changed(APP.src.js))
+      .pipe(modules.dependents())
       .pipe(modules.rename(
         foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
       ))
@@ -252,14 +256,28 @@ export const prettierCssTmpTask = {
 //-- compile js into tmp
 const _compileJsTmpTask = function() {
   modules.gulp.task('jsTmp', function(done) {
-    return modules.gulp.src(APP.src.js + '/**/index.js')
-    .pipe(modules.changed(APP.tmp.js))
-    .pipe(modules.dependents())
-    .pipe(modules.print(
-      filepath => `built: ${filepath}`
-    ))
-    .pipe(modules.gulp.dest(APP.tmp.js));
     // __compileJsTmp(APP.src.js + '/**/index.js', done);
+
+    return modules.gulp.src(APP.src.js + '/**/index.js')
+    .pipe(modules.tap(function(file) {
+      // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
+      const filename = file.path.split('\\').slice(-2)[1];
+      const foldername = file.path.split('\\').slice(-2)[0];
+
+      modules.gulp.src(file.path)
+      .pipe(modules.gulpBrowserify(
+        {
+          entries: [file.path],
+          transform: modules.babelify.configure({
+            presets: ["@babel/env"]
+          })
+        }
+      ))
+      .pipe(modules.rename(
+        foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
+      ))
+      .pipe(modules.gulp.dest(APP.tmp.js));
+    }));
   });
 };
 

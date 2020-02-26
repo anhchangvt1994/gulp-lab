@@ -8,7 +8,7 @@ const test = (() => {
 
   return {
     init() {
-      testFunc();
+      // testFunc();
     }
   }
 })();
