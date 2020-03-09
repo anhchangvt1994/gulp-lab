@@ -1,3 +1,4 @@
+import test from '../test/_test';
 const text = (() => {
   const  _testTextConsole = () => {
     const elText = document.getElementsByClassName('text__block');
@@ -9,6 +10,7 @@ const text = (() => {
   return {
     init() {
       _testTextConsole();
+      test.init();
     }
   }
 })();

@@ -9,6 +9,8 @@ import cached = require('gulp-cached');
 import changed = require('gulp-changed');
 import ansiColors = require('ansi-colors');
 import dependents = require('gulp-dependents');
+import ultimateDependents = require('gulp-ultimate-dependent');
+import resolveDependents = require('gulp-resolve-dependencies');
 import print = require('gulp-print');
 import browserSync = require('browser-sync');
 import prettier = require('gulp-prettier');
@@ -42,6 +44,8 @@ export default {
   cached,
   changed,
   dependents,
+  ultimateDependents,
+  resolveDependents,
   print: print.default,
   browserSync: browserSync.create(),
   prettier,

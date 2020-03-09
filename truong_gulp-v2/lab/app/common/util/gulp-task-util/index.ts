@@ -1,5 +1,7 @@
 import modules from '@common/define/module-define';
 import generatePathUrl from '@common/enum/task-path-enum';
+import Dependents from '@common/util/dependent-util';
+// import arrDependentsConfig from '@common/config/dependents-config';
 import APP from '@common/enum/source-enum';
 import RESOURCE from '@common/config/resource-config';
 import DATA from '@source-data';
@@ -36,12 +38,10 @@ const __compileJsTmp = function(filesbox,done) {
       filename = entry.split('/')[entry.split('/').length - 1];
       foldername = entry.split('/')[entry.split('/').length - 2];
 
-      return modules.browserify({entries: [entry], cache: {}})
+      return modules.browserify({entries: [entry]})
       .transform("babelify",{presets: ['@babel/env']})
       .bundle()
       .pipe(modules.source(filename))
-      .pipe(modules.changed(APP.src.js))
-      .pipe(modules.dependents())
       .pipe(modules.rename(
         foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
       ))
@@ -196,7 +196,7 @@ const _convertSassTmpTask = function() {
     .pipe(modules.plumber(function(err) {
       console.log(modules.ansiColors.red(err.message));
     }))
-    .pipe(modules.cached('scss'))
+    .pipe(modules.cached())
     .pipe(modules.dependents())
     .pipe(modules.sass())
     .pipe(modules.print(
@@ -255,32 +255,53 @@ export const prettierCssTmpTask = {
 //! ANCHOR - compileJsTask
 //-- compile js into tmp
 const _compileJsTmpTask = function() {
-  modules.gulp.task('jsTmp', function(done) {
-    // __compileJsTmp(APP.src.js + '/**/index.js', done);
+  const JsDependents = new Dependents('js');
 
+  modules.gulp.task('jsTmp', function(done) {
     return modules.gulp.src(APP.src.js + '/**/*.js')
-    .pipe(modules.cached('js'))
-    .pipe(modules.dependents())
+    .pipe(modules.cached('.js'))
     .pipe(modules.tap(function(file) {
+
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
       const filename = file.path.split('\\').slice(-2)[1];
       const foldername = file.path.split('\\').slice(-2)[0];
 
-      if(filename === 'index.js') {
-        modules.gulp.src(file.path)
+      let filePathData = null;
+
+      if(
+        filename === 'index.js' ||
+        foldername === 'js'
+      ) {
+        // NOTE Khi một file index thay đổi thì nó sẽ tự build lại, nên trong xử lý dependent chỉ update lại các dependents file của file index đó, chứ hok return ra mảng index cần build lại
+        JsDependents.generate({
+          'folder-name': foldername,
+          'path': file.path,
+          'file-name': filename,
+          'content': file.contents,
+        });
+
+        filePathData = file.path;
+      } else {
+        filePathData = JsDependents.generate({
+          'folder-name': foldername,
+          'file-name': filename,
+        });
+      }
+
+      if(filePathData) {
+        modules.gulp.src(filePathData)
         .pipe(modules.gulpBrowserify(
           {
-            entries: [file.path],
             transform: modules.babelify.configure({
               presets: ["@babel/env"]
-            })
+            }),
           }
-        ))
-        .pipe(modules.rename(
-          foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
         ))
         .pipe(modules.print(
           filepath => `compile js: ${filepath}`
+        ))
+        .pipe(modules.rename(
+          foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
         ))
         .pipe(
           modules.gulp.dest(APP.tmp.js)
@@ -370,9 +391,8 @@ export const prettierJsTmpTask = {
   'init': function() {
     modules.gulp.task('prettierJsTmp', function() {
       return modules.gulp.src(APP.tmp.js + '/*.js')
-      .pipe(modules.cached('js'))
-      .pipe(modules.dependents())
       .pipe(modules.prettier())
+      .pipe(modules.cached())
       .pipe(modules.print(
         filepath => `prettier js: ${filepath}`
       ))
