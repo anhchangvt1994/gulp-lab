@@ -12,3 +12,15 @@
 
     {% include "././_introduction-block.njk" %}
 </section>
+{% extends "../_layout.njk" %}
+
+{% set bodyClass = 'introductionPage' %}
+{% set pageHeadTitle = 'introduction' %}
+
+<!-- ===============Body=============== -->
+
+{% block header %}{% endblock %}
+
+{% block body %}
+  {% include "./introduction/index.njk" %}
+{% endblock %}

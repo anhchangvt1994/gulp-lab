@@ -1,5 +1,8 @@
-<div class="text__layout">
-  {% import "./_text-block.njk" as text %}
+{% extends "../_layout.njk" %}
 
-  {{ text.text('change content for text tempalte') }}
-</div>
+{% set bodyClass = 'textPage' %}
+{% set pageHeadTitle = 'text' %}
+
+{% block body %}
+  {% include "./text/index.njk" %}
+{% endblock %}

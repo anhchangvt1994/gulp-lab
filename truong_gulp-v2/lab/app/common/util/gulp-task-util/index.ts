@@ -33,11 +33,6 @@ const __compileJsTmp = function(filesbox,done) {
     var filename,foldername;
 
     var tasks = files.map(function(entry) {
-      console.log(entry);
-      console.log('--------------------------------------');
-      filename = entry.split('/')[entry.split('/').length - 1];
-      foldername = entry.split('/')[entry.split('/').length - 2];
-
       return modules.browserify({entries: [entry]})
       .transform("babelify",{presets: ['@babel/env']})
       .bundle()
@@ -273,40 +268,43 @@ const _compileJsTmpTask = function() {
         foldername === 'js'
       ) {
         // NOTE Khi một file index thay đổi thì nó sẽ tự build lại, nên trong xử lý dependent chỉ update lại các dependents file của file index đó, chứ hok return ra mảng index cần build lại
-        JsDependents.generate({
+        filePathData = JsDependents.generate({
           'folder-name': foldername,
           'path': file.path,
           'file-name': filename,
           'content': file.contents,
         });
-
-        filePathData = file.path;
       } else {
         filePathData = JsDependents.generate({
           'folder-name': foldername,
           'file-name': filename,
+          'content': file.contents,
         });
       }
 
-      if(filePathData) {
-        modules.gulp.src(filePathData)
-        .pipe(modules.gulpBrowserify(
-          {
-            transform: modules.babelify.configure({
-              presets: ["@babel/env"]
-            }),
-          }
-        ))
-        .pipe(modules.print(
-          filepath => `compile js: ${filepath}`
-        ))
-        .pipe(modules.rename(
-          foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
-        ))
-        .pipe(
-          modules.gulp.dest(APP.tmp.js)
-        );
-      }
+      console.log('======================================');
+      console.log(file.path);
+      console.log(filePathData);
+
+      // if(filePathData) {
+      //   modules.gulp.src(filePathData)
+      //   .pipe(modules.gulpBrowserify(
+      //     {
+      //       transform: modules.babelify.configure({
+      //         presets: ["@babel/env"]
+      //       }),
+      //     }
+      //   ))
+      //   .pipe(modules.print(
+      //     filepath => `compile js: ${filepath}`
+      //   ))
+      //   .pipe(modules.rename(
+      //     foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
+      //   ))
+      //   .pipe(
+      //     modules.gulp.dest(APP.tmp.js)
+      //   );
+      // }
     }));
   });
 };

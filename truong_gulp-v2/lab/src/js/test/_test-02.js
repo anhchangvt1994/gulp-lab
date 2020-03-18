@@ -5,7 +5,7 @@ export default (() => {
 
   return {
     init() {
-      _consoleTest();
+      // _consoleTest();
     }
   }
 })();
