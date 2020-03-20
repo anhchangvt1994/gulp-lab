@@ -85,7 +85,7 @@ export const watchJsTask = {
 //! ANCHOR  - watchNunjuckTask
 //-- watch njk files change task
 const _watchNunjuckTask = function() {
-  gulp.watch(APP.src.njk + '**/*.njk', gulp.series(
+  gulp.watch(APP.src.njk + '/**/*.njk', gulp.series(
     convertNunjuckTask.tmp.name,
     prettierHtmlTask.tmp.name,
   ));

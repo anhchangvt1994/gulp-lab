@@ -5,34 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>{{ objGlobal.projectTitle + '-' + pageHeadTitle }}</title>
+
+    <!-- global css file (common.css) -->
     {% for cssFile in objGlobal['common']['arrCssFile'] %}
       <link rel="stylesheet" href="{{ 'css/' + cssFile + '.css' + '?v=' + intRandomNumber }}">
     {% endfor %}
 
-    {% for cssFile in objGlobal[namepage]['arrCssFile'] %}
+    <!-- page css file -->
+    {% for cssFile in objGlobal %}
       <link rel="stylesheet" href="{{ 'css/' + cssFile + '.css' + '?v=' + intRandomNumber }}">
     {% endfor %}
 
+    <!-- global js file (common.js) -->
     {% for jsFile in objGlobal['common']['arrJsFile'] %}
       <script src="{{ 'js/' + jsFile + '.js' + '?v=' + intRandomNumber }}"></script>
     {% endfor %}
   </head>
   <body class='{{ bodyClass }}'>
-
+    <!-- header region -->
     {% block header %}
       {% include "../header/header.njk" %}
     {% endblock %}
+    <!-- #end header region -->
 
+    <!-- body region -->
     {% block body %}{% endblock %}
+    <!-- #end body region -->
 
+    <!-- footer region -->
     {% block footer %}
       {% include "../footer/footer.njk" %}
     {% endblock %}
+    <!-- #end footer region -->
 
+    <!-- page js file -->
     {% for jsFile in objGlobal[namepage]['arrJsFile'] %}
       <script src="{{ 'js/' + jsFile + '.js' + '?v=' + intRandomNumber }}"></script>
     {% endfor %}
 
+    <!-- other js file -->
     {% block script %}{% endblock %}
   </body>
 </html>

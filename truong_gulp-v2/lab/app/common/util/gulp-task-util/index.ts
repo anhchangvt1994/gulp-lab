@@ -401,10 +401,10 @@ export const prettierJsTmpTask = {
 
 //! ANCHOR - convertNunjuckTask
 //-- convert nunjuck to html into tmp
-const _convertNunjuckTmpTask = function() {
+const _convertNunjuckTmpTaskOld = function() {
   modules.gulp.task('njkTmp', function() {
 
-    return modules.gulp.src(APP.src.njk + '/*.njk')
+    return modules.gulp.src(APP.src.njk + '/**/*.njk')
     .pipe(modules.data((file) => (
       {
         namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
@@ -428,6 +428,67 @@ const _convertNunjuckTmpTask = function() {
     .pipe(modules.browserSync.reload({ stream: true }));
   });
 };
+
+const _convertNunjuckTmpTask = function() {
+  const NjkDependents = new Dependents('njk');
+
+  modules.gulp.task('njkTmp', function() {
+    return modules.gulp.src(APP.src.njk + '/**/*.njk')
+    .pipe(modules.cached('njk'))
+    .pipe(modules.tap(function(file) {
+      // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
+      const filename = file.path.split('\\').slice(-2)[1];
+      const foldername = file.path.split('\\').slice(-2)[0];
+
+      let filePathData = null;
+
+      if(filename === 'index.njk') {
+        // NOTE Khi một file index thay đổi thì nó sẽ tự build lại, nên trong xử lý dependent sẽ update lại các dependents file của file index đó
+        filePathData = NjkDependents.generate({
+          'folder-name': foldername,
+          'path': file.path,
+          'file-name': filename,
+          'content': file.contents,
+        });
+      } else {
+        filePathData = NjkDependents.generate({
+          'folder-name': foldername,
+          'file-name': filename,
+          'content': file.contents,
+        });
+      }
+
+      console.log(filePathData);
+
+      if(
+        filePathData &&
+        filePathData.length > 0
+      ) {
+        modules.gulp.src(filePathData)
+        .pipe(modules.data((file) => (
+          {
+            namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
+            data: DATA,
+          }
+        )))
+        .pipe(modules.nunjucksRender({
+          ext: '.html',
+          data: {
+            objGlobal: RESOURCE,
+            intRandomNumber : Math.random() * 10
+          }
+        }))
+        .pipe(modules.cached('html'))
+        .pipe(modules.dependents())
+        .pipe(modules.print(
+          filepath => `built: ${filepath}`
+        ))
+        .pipe(modules.gulp.dest(APP.tmp.path))
+        .pipe(modules.browserSync.reload({ stream: true }));
+      }
+    }));
+  });
+}
 
 //-- convert nunjuck to html into dist
 const _convertNunjuckTmpDist = function() {
