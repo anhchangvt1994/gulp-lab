@@ -7,33 +7,50 @@ import path = require('path');
 /* --------------------------------- METHOD --------------------------------- */
 //! ANCHOR - __groupWatchFiles
 //-- Tạo ra method chứa những task watch có liên quan với nhau, dùng để xử lý 1 gulp task vd gulp task images hay gulp task fonts
+interface arrRelativeTaskListConstruct {
+  'add'?: any,
+  'remove'?: any,
+  'other'?: any,
+};
+
 interface arrWatchFilesConfigConstruct {
   'sourcePathUrl': string,
-  'relativeTaskName': string,
+  'relativeTaskList': arrRelativeTaskListConstruct,
 };
 
 const __groupWatchFiles = function(arrWatchFilesConfig: arrWatchFilesConfigConstruct) {
-  //-- khi rename files
-  gulp.watch(arrWatchFilesConfig.sourcePathUrl, gulp.series(
-    convertNunjuckTask.tmp.name,
-    prettierHtmlTask.tmp.name,
-  ));
-
   //-- khi thêm files
-  gulp.watch(arrWatchFilesConfig.sourcePathUrl,
-  {events : ['add','change']},
-  gulp.series(
-    arrWatchFilesConfig.relativeTaskName,
-  ));
+  if(arrWatchFilesConfig.relativeTaskList.add) {
+    gulp.watch(arrWatchFilesConfig.sourcePathUrl,
+    {events : ['add','change']},
+    gulp.series(
+      arrWatchFilesConfig.relativeTaskList.add,
+    ));
+  }
 
   //-- khi xóa files
-  const watchDelImages = gulp.watch(arrWatchFilesConfig.sourcePathUrl);
+  const watchDelFiles = gulp.watch(arrWatchFilesConfig.sourcePathUrl);
 
-  watchDelImages.on('unlink', function(filepath) {
-    const filePathFromSrc = path.relative(path.resolve('src'),filepath);
-    const destFilePath = path.resolve(APP.tmp.path, filePathFromSrc);
+  watchDelFiles.on('unlink', function(filepath) {
+    const removeTask = arrWatchFilesConfig.relativeTaskList.remove;
 
-    del.sync(destFilePath);
+    if(
+      removeTask &&
+      typeof removeTask === 'function'
+    ) {
+      removeTask(filepath);
+    } else {
+      const filePathFromSrc = path.relative(path.resolve('src'), filepath);
+      const destFilePath = path.resolve(APP.tmp.path, filePathFromSrc);
+
+      del.sync(destFilePath);
+
+      if(typeof removeTask === 'string') {
+        gulp.series(
+          removeTask,
+        );
+      }
+    }
   });
 };
 
@@ -46,9 +63,6 @@ const __groupWatchFiles = function(arrWatchFilesConfig: arrWatchFilesConfigConst
 const _watchScssTask = function() {
   gulp.watch(APP.src.scss + '/**/*.scss', gulp.series(
     convertSassTask.tmp.name,
-    prettierCssTmpTask.name,
-    convertNunjuckTask.tmp.name,
-    prettierHtmlTask.tmp.name,
   ));
 };
 
@@ -62,7 +76,9 @@ export const watchScssTask = {
 const _watchFontsTask = function() {
   __groupWatchFiles({
     'sourcePathUrl': APP.src.fonts + '/**/*.{svg,eot,otf,ttf,woff,woff2}',
-    'relativeTaskName': copyFontsTask.tmp.name,
+    'relativeTaskList': {
+      'add': copyFontsTask.tmp.name,
+    },
   });
 };
 
@@ -71,10 +87,28 @@ const _watchFontsTask = function() {
 const _watchJsTask = function() {
   gulp.watch(APP.src.js + '/**/*.js', gulp.series(
     compileJsTask.tmp.name,
-    prettierJsTmpTask.name,
-    convertNunjuckTask.tmp.name,
-    prettierHtmlTask.tmp.name,
   ));
+
+  __groupWatchFiles({
+    'sourcePathUrl': APP.src.js + '/**/*.js',
+    'relativeTaskList': {
+      'remove': function(filePath) {
+        let filename = filePath.split('\\').slice(-2)[1];
+        const foldername = filePath.split('\\').slice(-2)[0];
+
+        if(
+          filename == 'index.js'
+        ) {
+          filename = foldername + '.js';
+          const destFilePath = path.resolve(APP.tmp.path, 'js\\' + filename);
+
+          del.sync(destFilePath);
+        }
+
+        compileJsTask.dependent.removeDependentFiles(filename);
+      },
+    },
+  });
 };
 
 export const watchJsTask = {
@@ -87,7 +121,6 @@ export const watchJsTask = {
 const _watchNunjuckTask = function() {
   gulp.watch(APP.src.njk + '/**/*.njk', gulp.series(
     convertNunjuckTask.tmp.name,
-    prettierHtmlTask.tmp.name,
   ));
 };
 
@@ -101,7 +134,9 @@ export const watchNunjuckTask = {
 const _watchImagesTask = function() {
   __groupWatchFiles({
     'sourcePathUrl': APP.src.images + '**/*.{jpg,png,gif,svg,ico}',
-    'relativeTaskName': copyImagesTask.name,
+    'relativeTaskList': {
+      'add': copyImagesTask.name,
+    },
   });
 };
 

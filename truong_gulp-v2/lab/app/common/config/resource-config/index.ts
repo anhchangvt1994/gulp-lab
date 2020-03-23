@@ -1,43 +1,64 @@
-interface ResourceItemConstruct {
+import { generateDirFromRootPath } from '@common/enum/path-enum';
+
+interface ResourceItemDataConstruct {
   "arrCssFile": string[],
   "arrJsFile": string[],
 };
 
+interface ResourceItemConstruct {
+  [key:string]: ResourceItemDataConstruct,
+};
+
+interface PathListItemDataConstruct {
+  'src': string,
+  'njk': string,
+  'layout': string,
+};
+
 interface ResourceConstruct {
-  [key:string]: ResourceItemConstruct,
+  'path-list': PathListItemDataConstruct,
+  'resource-list': ResourceItemConstruct,
 };
 
 const RESOURCE: ResourceConstruct = {
-  "libs" : {
-    "arrCssFile": [],
-    "arrJsFile": []
+  'path-list': {
+    'src': generateDirFromRootPath('/src'),
+    'njk': generateDirFromRootPath('/src/njk'),
+    'layout': generateDirFromRootPath('/src/njk/_layout.njk'),
   },
 
-  "common" : {
-    "arrCssFile": [
-      "header",
-      "footer"
-    ],
-    "arrJsFile": []
-  },
+  'resource-list': {
+    "libs" : {
+      "arrCssFile": [],
+      "arrJsFile": []
+    },
 
-  "text-page" : {
-    "arrCssFile" : [
-      "text-style"
-    ],
-    "arrJsFile" : [
-      "text",
-      "test01"
-    ]
-  },
+    "common" : {
+      "arrCssFile": [
+        "header",
+        "footer"
+      ],
+      "arrJsFile": []
+    },
 
-  "introduction-page" : {
-    "arrCssFile" : [
-      "introduction-style"
-    ],
-    "arrJsFile" : [
-      "introduction"
-    ]
+    "text-page" : {
+      "arrCssFile" : [
+        "text-style"
+      ],
+      "arrJsFile" : [
+        "text",
+        "test01"
+      ]
+    },
+
+    "introduction-page" : {
+      "arrCssFile" : [
+        "introduction-style"
+      ],
+      "arrJsFile" : [
+        "introduction"
+      ]
+    }
   }
 };
 

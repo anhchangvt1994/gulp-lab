@@ -1,30 +1,32 @@
+{% set objResource = objGlobal.resource; %}
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ objGlobal.projectTitle + '-' + pageHeadTitle }}</title>
+    <title>{{ objResource.projectTitle + '-' + pageHeadTitle }}</title>
 
     <!-- global css file (common.css) -->
-    {% for cssFile in objGlobal['common']['arrCssFile'] %}
+    {% for cssFile in objResource['common']['arrCssFile'] %}
       <link rel="stylesheet" href="{{ 'css/' + cssFile + '.css' + '?v=' + intRandomNumber }}">
     {% endfor %}
 
     <!-- page css file -->
-    {% for cssFile in objGlobal %}
+    {% for cssFile in objResource %}
       <link rel="stylesheet" href="{{ 'css/' + cssFile + '.css' + '?v=' + intRandomNumber }}">
     {% endfor %}
 
     <!-- global js file (common.js) -->
-    {% for jsFile in objGlobal['common']['arrJsFile'] %}
+    {% for jsFile in objResource['common']['arrJsFile'] %}
       <script src="{{ 'js/' + jsFile + '.js' + '?v=' + intRandomNumber }}"></script>
     {% endfor %}
   </head>
   <body class='{{ bodyClass }}'>
     <!-- header region -->
     {% block header %}
-      {% include "../header/header.njk" %}
+      {% include "./header/header.njk" %}
     {% endblock %}
     <!-- #end header region -->
 
@@ -34,12 +36,12 @@
 
     <!-- footer region -->
     {% block footer %}
-      {% include "../footer/footer.njk" %}
+      {% include "./footer/footer.njk" %}
     {% endblock %}
     <!-- #end footer region -->
 
     <!-- page js file -->
-    {% for jsFile in objGlobal[namepage]['arrJsFile'] %}
+    {% for jsFile in objResource[namepage]['arrJsFile'] %}
       <script src="{{ 'js/' + jsFile + '.js' + '?v=' + intRandomNumber }}"></script>
     {% endfor %}
 

@@ -81,10 +81,6 @@ class Dependents {
 
     arrJsFileInfo.content = arrJsFileInfo.content.toString().replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/mg, '');
 
-    console.log('file name: ');
-    console.log(strTmpFileName);
-    console.log('-------------------------------');
-
     while((arrMatchResult = self._regexExecFileContent.exec(arrJsFileInfo.content)) !== null) {
       // This is necessary to avoid infinite loops with zero-width matches
       if(arrMatchResult.index === self._regexExecFileContent.lastIndex) {
@@ -99,7 +95,6 @@ class Dependents {
       }
 
       const strDependentFileName = arrFilePathSplit.slice(-2)[1] + '.' + ARR_EXTENSION_FILE.JS_EXTENSION;
-      console.log(strDependentFileName);
 
       if(arrTmpCurMainFile.indexOf(strDependentFileName) === -1) {
         arrTmpCurMainFile.push(strDependentFileName);
@@ -127,8 +122,6 @@ class Dependents {
       self._arrMainFiles[strTmpFileName].length > 0
     ) {
       const arrCompareFile = self._comparerArray(self._arrMainFiles[strTmpFileName], arrTmpCurMainFile);
-      console.log('compare file:');
-      console.log(arrCompareFile);
 
       if(arrCompareFile.length > 0) {
         // NOTE Update lại array gốc của main file hiện tại
@@ -138,20 +131,11 @@ class Dependents {
           const arrDependentWithCompareFileName = self._arrDependentFiles[strCompareFileName];
           const indexOfMainFile = arrDependentWithCompareFileName.indexOf(strTmpFileName);
 
-          console.log(strTmpFileName);
-          console.log(indexOfMainFile);
-
           // NOTE Loại bỏ dependent file đã comment hoặc remove trong main file
           self._arrDependentFiles[strCompareFileName].splice(indexOfMainFile, 1);
         });
       }
     }
-
-    console.log('~~~~~~~~~~~~~~~~~~~~');
-    console.log(self._arrMainFiles);
-    console.log('++++++++++++++++');
-    console.log(self._arrDependentFiles);
-    console.log('-------------------------');
 
     if(self._arrIndexFilePath[strTmpFileName]) {
       return [self._arrIndexFilePath[strTmpFileName]];
@@ -189,10 +173,6 @@ class Dependents {
 
     arrNjkFileInfo.content = arrNjkFileInfo.content.toString().replace(/{#[^>]*#}/mg, '');
 
-    console.log('file name: ');
-    console.log(strTmpFileName);
-    console.log('-------------------------------');
-
     while((arrMatchResult = self._regexExecFileContent.exec(arrNjkFileInfo.content)) !== null) {
       // This is necessary to avoid infinite loops with zero-width matches
       if(arrMatchResult.index === self._regexExecFileContent.lastIndex) {
@@ -207,7 +187,6 @@ class Dependents {
       }
 
       const strDependentFileName = arrFilePathSplit.slice(-2)[1];
-      console.log(strDependentFileName);
 
       if(arrTmpCurMainFile.indexOf(strDependentFileName) === -1) {
         arrTmpCurMainFile.push(strDependentFileName);
@@ -235,8 +214,6 @@ class Dependents {
       self._arrMainFiles[strTmpFileName].length > 0
     ) {
       const arrCompareFile = self._comparerArray(self._arrMainFiles[strTmpFileName], arrTmpCurMainFile);
-      console.log('compare file:');
-      console.log(arrCompareFile);
 
       if(arrCompareFile.length > 0) {
         // NOTE Update lại array gốc của main file hiện tại
@@ -246,20 +223,11 @@ class Dependents {
           const arrDependentWithCompareFileName = self._arrDependentFiles[strCompareFileName];
           const indexOfMainFile = arrDependentWithCompareFileName.indexOf(strTmpFileName);
 
-          console.log(strTmpFileName);
-          console.log(indexOfMainFile);
-
           // NOTE Loại bỏ dependent file đã comment hoặc remove trong main file
           self._arrDependentFiles[strCompareFileName].splice(indexOfMainFile, 1);
         });
       }
     }
-
-    console.log('~~~~~~~~~~~~~~~~~~~~');
-    console.log(self._arrMainFiles);
-    console.log('++++++++++++++++');
-    console.log(self._arrDependentFiles);
-    console.log('-------------------------');
 
     if(self._arrIndexFilePath[strTmpFileName]) {
       return [self._arrIndexFilePath[strTmpFileName]];
@@ -291,6 +259,34 @@ class Dependents {
     });
 
     return arrUnionFactory;
+  }
+
+  removeDependentFiles(strFileName) {
+    console.log(strFileName);
+    const self = this;
+    const arrMainFiles = self._arrMainFiles[strFileName];
+    self._arrMainFiles[strFileName] = [];
+    console.log(arrMainFiles);
+
+    if(
+      arrMainFiles &&
+      arrMainFiles.length > 0
+    ) {
+      arrMainFiles.forEach(function(strDependentFileName) {
+        const arrDependentFiles = self._arrDependentFiles[strDependentFileName];
+
+        if(
+          arrDependentFiles &&
+          arrDependentFiles.length > 0
+        ) {
+          const indexOfMainFile = arrDependentFiles.indexOf(strFileName);
+
+          if(indexOfMainFile !== -1) {
+            self._arrDependentFiles[strDependentFileName].splice(indexOfMainFile, 1);
+          }
+        }
+      });
+    }
   }
 
   private _generateMainFileList(

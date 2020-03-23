@@ -1,5 +1,3 @@
-import globalTest from '../global/global-test';
-
 export default (() => {
   const _consoleTest = () => {
     console.log('test compile for es6');
@@ -7,7 +5,7 @@ export default (() => {
 
   return {
     init() {
-      // _consoleTest();
+      _consoleTest();
       // globalTest.init();
     }
   }

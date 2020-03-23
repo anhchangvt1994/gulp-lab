@@ -4,7 +4,7 @@ const text = (() => {
     const elText = document.getElementsByClassName('text__block');
     if(!elText) {return}
 
-    console.log(elText.innerHTML);
+    // console.log(elText.innerHTML);
   };
 
   return {
