@@ -1,5 +1,5 @@
 import 'tsconfig-paths/register';
-import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssTmpTask, compileJsTask, compileJsCommonTask, compileJsLibTask, prettierJsTmpTask, convertNunjuckTask, prettierHtmlTask } from '@common/util/gulp-task-util';
+import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssTmpTask, compileJsTask, convertNunjuckTask, prettierHtmlTask } from '@common/util/gulp-task-util';
 import { watchTmpTask } from '@common/util/watch-task-util';
 import gulp = require('gulp');
 
@@ -36,25 +36,6 @@ copyFontsTask.tmp.init();
 //-- copy fonts to dist
 copyFontsTask.dist.init();
 
-//! ANCHOR - compileJsCommonTask
-//-- compile common js into tmp
-compileJsCommonTask.tmp.init();
-
-//-- compile common js into dist
-compileJsCommonTask.dist.init();
-
-//! ANCHOR - compileJsLibTask
-//-- compile lib js into tmp
-compileJsLibTask.tmp.init();
-
-//-- compile lib js into dist
-compileJsLibTask.dist.init();
-
-//! ANCHOR - prettierJsTmpTask
-//-- compile lib js into tmp
-//? chỉ sử dụng cho js của tmp dir
-prettierJsTmpTask.init();
-
 //! ANCHOR - convertNunjuckTask
 //-- convert nunjuck to html into tmp
 convertNunjuckTask.tmp.init();
@@ -90,17 +71,16 @@ gulp.task('dev', gulp.series(
   gulp.parallel(
     convertSassTask.tmp.name,
     copyFontsTask.tmp.name,
-    compileJsLibTask.tmp.name,
-    compileJsTask.tmp.name,
-    compileJsCommonTask.tmp.name,
+
+    gulp.series(
+      compileJsTask.tmp.name,
+      compileJsTask.endTmp.name,
+    ),
+
     copyImagesTask.name,
   ),
   convertNunjuckTask.tmp.name,
-  gulp.parallel(
-    prettierCssTmpTask.name,
-    prettierJsTmpTask.name,
-    prettierHtmlTask.tmp.name,
-  ),
+  convertNunjuckTask.endTmp.name,
   gulp.parallel(
     watchTmpTask.name,
     browserSyncTask.name,
@@ -117,9 +97,7 @@ gulp.task('prod', gulp.series(
   gulp.parallel(
     convertSassTask.dist.name,
     copyFontsTask.dist.name,
-    compileJsLibTask.dist.name,
     compileJsTask.dist.name,
-    compileJsCommonTask.dist.name,
   ),
   convertNunjuckTask.dist.name,
   gulp.parallel(

@@ -16,18 +16,18 @@ interface PathListItemDataConstruct {
 };
 
 interface ResourceConstruct {
-  'path-list': PathListItemDataConstruct,
-  'resource-list': ResourceItemConstruct,
+  'path': PathListItemDataConstruct,
+  'resource': ResourceItemConstruct,
 };
 
 const RESOURCE: ResourceConstruct = {
-  'path-list': {
+  'path': {
     'src': generateDirFromRootPath('/src'),
     'njk': generateDirFromRootPath('/src/njk'),
     'layout': generateDirFromRootPath('/src/njk/_layout.njk'),
   },
 
-  'resource-list': {
+  'resource': {
     "libs" : {
       "arrCssFile": [],
       "arrJsFile": []

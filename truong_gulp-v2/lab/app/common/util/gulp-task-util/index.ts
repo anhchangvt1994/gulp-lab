@@ -1,5 +1,4 @@
 import modules from '@common/define/module-define';
-import { generatePathUrl } from '@common/enum/path-enum';
 import Dependents from '@common/util/dependent-util';
 import APP from '@common/enum/source-enum';
 import RESOURCE from '@common/config/resource-config';
@@ -22,58 +21,6 @@ const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
       filepath => `built: ${filepath}`
     ))
     .pipe(modules.gulp.dest(arrMoveFilesConfig.targetPathUrl));
-};
-
-//! ANCHOR - __compileJsTmp
-//-- compile js tmp execute method
-const __compileJsTmp = function(filesbox,done) {
-  modules.glob(filesbox, function (err, files) {
-    if(err) done(err);
-    var filename,foldername;
-
-    var tasks = files.map(function(entry) {
-      return modules.browserify({entries: [entry]})
-      .transform("babelify",{presets: ['@babel/env']})
-      .bundle()
-      .pipe(modules.source(filename))
-      .pipe(modules.rename(
-        foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
-      ))
-      .pipe(modules.print(
-        filepath => `built: ${filepath}`
-      ))
-      .pipe(modules.gulp.dest(APP.tmp.js))
-      .pipe(modules.browserSync.reload({ stream: true }));
-    });
-
-    modules.es.merge(tasks).on('end', done);
-  });
-};
-
-//-- compile js dist execute method
-const __compileJsDist = function(filesbox,done) {
-  modules.glob(filesbox, function (err, files) {
-    if(err) done(err);
-    var filename,foldername;
-
-    var tasks = files.map(function(entry) {
-      filename = entry.split('/')[entry.split('/').length - 1];
-      foldername = entry.split('/')[entry.split('/').length - 2];
-
-      return modules.browserify({entries: [entry]})
-      .transform("babelify",{presets: ['@babel/env']})
-      .bundle()
-      .pipe(modules.source(filename))
-      .pipe(modules.rename(
-        foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
-      ))
-      .pipe(modules.buffer())
-      .pipe(modules.uglify())
-      .pipe(modules.gulp.dest(APP.dist.js));
-    });
-
-    modules.es.merge(tasks).on('end', done);
-  });
 };
 /* -------------------------------------------------------------------------- */
 
@@ -115,7 +62,11 @@ export const copyImagesTask = {
       return modules.gulp.src(APP.src.images + '**/*.{jpg,png,gif,svg,ico}')
       .pipe(modules.plumber())
       .pipe(modules.cached('jpg,png,gif,svg,ico'))
-      .pipe(modules.dependents())
+      .pipe(modules.print(
+        filepath => {
+          return modules.ansiColors.green(`copy image: ${filepath}`);
+        }
+      ))
       .pipe(modules.copy(
         APP.tmp.images,
         {
@@ -124,9 +75,6 @@ export const copyImagesTask = {
             vd: từ FADO_EMAIL-V2 vào dist/images thì phải qua 2 cấp thư mục dist/images
           */
         }
-      ))
-      .pipe(modules.print(
-        filepath => `built: ${filepath}`
       ))
       .pipe(modules.browserSync.reload({ stream: true }));
     });
@@ -142,12 +90,10 @@ interface ArrTaskConfigConstruct {
 
 const _copyFontsTask = function(arrTaskConfig: ArrTaskConfigConstruct) {
   modules.gulp.task(arrTaskConfig.name, function() {
-    let arrUrl;
     return modules.gulp.src(APP.src.fonts + '/**/*.{svg,eot,otf,ttf,woff,woff2}')
     .pipe(modules.cached('fonts'))
     .pipe(modules.print((filepath) => {
-      arrUrl = filepath.split('\\');
-      return modules.ansiColors.green(`built: ${generatePathUrl(arrUrl)}`);
+      return modules.ansiColors.green(`copy font: ${filepath}`);
     }))
     .pipe(modules.copy(
       //? vì cấu trúc copy fonts của tmp và dist giống nhau, chỉ khác đường dẫn đích nên sẽ sử dụng chung cấu trúc, chỉ thay đổi đường dẫn đích nhận tham số truyền vào
@@ -185,20 +131,18 @@ export const copyFontsTask = {
 //-- convert sass to css into tmp
 const _convertSassTmpTask = function() {
   modules.gulp.task('sassTmp', function() {
-    let arrUrl;
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
     .pipe(modules.plumber(function(err) {
       console.log(modules.ansiColors.red(err.message));
     }))
     .pipe(modules.cached())
     .pipe(modules.dependents())
-    .pipe(modules.sass())
     .pipe(modules.print(
       (filepath) => {
-        arrUrl = filepath.split('\\');
-        return modules.ansiColors.green(`built: ${generatePathUrl(arrUrl)}`);
+        return modules.ansiColors.yellow(`compile sass: ${filepath}`);
       }
     ))
+    .pipe(modules.sass())
     .pipe(modules.gulp.dest(APP.tmp.css))
     .pipe(modules.browserSync.reload({ stream: true }));
   });
@@ -283,16 +227,21 @@ const _compileJsTmpTask = function() {
 
       if(filePathData) {
         filePathData.forEach(function(strFilePath) {
+          const filename = strFilePath.split('\\').slice(-2)[1];
+          const foldername = strFilePath.split('\\').slice(-2)[0];
+
           modules.gulp.src(strFilePath)
+          .pipe(modules.print(
+            filepath => {
+              return modules.ansiColors.yellow(`compile js: ${filepath}`);
+            }
+          ))
           .pipe(modules.gulpBrowserify(
             {
               transform: modules.babelify.configure({
                 presets: ["@babel/env"]
               }),
             }
-          ))
-          .pipe(modules.print(
-            filepath => `compile js: ${filepath}`
           ))
           .pipe(modules.rename(
             foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
@@ -302,14 +251,23 @@ const _compileJsTmpTask = function() {
           );
         });
       }
-    }));
+    }))
+  });
+
+  // NOTE xử lý phụ sau khi js compile finish
+  modules.gulp.task('jsEndTmp', function(cb) {
+    if(JsDependents.isFirstCompile) {
+      JsDependents.isFirstCompile = false;
+    }
+
+    cb();
   });
 };
 
 //-- compile js into dist
 const _compileJsDistTask = function() {
   modules.gulp.task('jsDist', function(done) {
-    __compileJsDist(APP.src.js + '/**/index.js', done);
+    // __compileJsDist(APP.src.js + '/**/index.js', done);
   });
 };
 
@@ -318,6 +276,9 @@ export const compileJsTask = {
     'name': 'jsTmp',
     'init': _compileJsTmpTask,
   },
+  'endTmp': {
+    'name': 'jsEndTmp',
+  },
   'dist': {
     'name': 'jsDist',
     'init': _compileJsDistTask,
@@ -325,82 +286,11 @@ export const compileJsTask = {
   'dependent': JsDependents,
 };
 
-//! ANCHOR - compileJsCommonTask
-//-- compile common js into tmp
-const _compileJsCommonTmpTask = function() {
-  modules.gulp.task('jsCommonTmp', function(done) {
-    __compileJsTmp(APP.src.js + 'common.js', done);
-  });
-};
-
-//-- compile common js into dist
-const _compileJsCommonDistTask = function() {
-  modules.gulp.task('jsCommonDist', function(done) {
-    __compileJsDist(APP.src.js + 'common.js', done);
-  });
-};
-
-export const compileJsCommonTask = {
-  'tmp': {
-    'name': 'jsCommonTmp',
-    'init': _compileJsCommonTmpTask,
-  },
-  'dist': {
-    'name': 'jsCommonDist',
-    'init': _compileJsCommonDistTask,
-  }
-};
-
-//! ANCHOR - compileJsLibTask
-//-- compile lib js into tmp and dist
-export const compileJsLibTask  = {
-  'tmp': {
-    'name': 'jsLibTmp',
-    'init': function() {
-      modules.gulp.task('jsLibTmp', function() {
-        return __moveFiles({
-          'sourcePathUrl': APP.src.js + '/libs/*.js',
-          'targetPathUrl': APP.tmp.js + '/libs/',
-        });
-      });
-    },
-  },
-  'dist': {
-    'name': 'jsLibDist',
-    'init': function() {
-      modules.gulp.task('jsLibDist', function() {
-        return __moveFiles({
-          'sourcePathUrl': APP.src.js + '/libs/*.js',
-          'targetPathUrl': APP.dist.js + '/libs/',
-        });
-      })
-    },
-  }
-};
-
-//! ANCHOR - prettierJsTmpTask
-//-- compile lib js into tmp
-//? chỉ sử dụng cho js của tmp dir
-export const prettierJsTmpTask = {
-  'name': 'prettierJsTmp',
-  'init': function() {
-    modules.gulp.task('prettierJsTmp', function() {
-      return modules.gulp.src(APP.tmp.js + '/*.js')
-      .pipe(modules.prettier())
-      .pipe(modules.cached())
-      .pipe(modules.print(
-        filepath => `prettier js: ${filepath}`
-      ))
-      .pipe(modules.gulp.dest(APP.tmp.js))
-    });
-  }
-}
-
 //! ANCHOR - convertNunjuckTask
 //-- convert nunjuck to html into tmp
-const _convertNunjuckTmpTask = function() {
-  const NjkDependents = new Dependents('njk');
+const NjkDependents = new Dependents('njk');
 
+const _convertNunjuckTmpTask = function() {
   modules.gulp.task('njkTmp', function() {
     return modules.gulp.src(APP.src.njk + '/**/*.njk')
     .pipe(modules.cached('.njk'))
@@ -431,31 +321,45 @@ const _convertNunjuckTmpTask = function() {
         filePathData &&
         filePathData.length > 0
       ) {
-        console.log('build');
-        modules.gulp.src(filePathData)
-        .pipe(modules.data((file) => (
-          {
-            namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
-            data: DATA,
-          }
-        )))
-        .pipe(modules.nunjucksRender({
-          ext: '.html',
-          data: {
-            objGlobal: RESOURCE,
-            intRandomNumber : Math.random() * 10
-          }
-        }))
-        .pipe(modules.rename(
-          foldername + '.html'
-        ))
-        .pipe(modules.print(
-          filepath => `built: ${filepath}`
-        ))
-        .pipe(modules.gulp.dest(APP.tmp.path))
-        .pipe(modules.browserSync.reload({ stream: true }));
+        filePathData.forEach(function(indexPath) {
+          const foldername = indexPath.split('\\').slice(-2)[0];
+
+          modules.gulp.src(indexPath)
+          .pipe(modules.print(
+            filepath => {
+              return modules.ansiColors.yellow(`convert njk: ${filepath}`);
+            }
+          ))
+          .pipe(modules.data((file) => (
+            {
+              namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
+              data: DATA,
+            }
+          )))
+          .pipe(modules.nunjucksRender({
+            ext: '.html',
+            data: {
+              objGlobal: RESOURCE,
+              intRandomNumber : Math.random() * 10
+            }
+          }))
+          .pipe(modules.rename(
+            foldername + '.html'
+          ))
+          .pipe(modules.gulp.dest(APP.tmp.path))
+          .pipe(modules.browserSync.reload({ stream: true }));
+        });
       }
     }));
+  });
+
+  // NOTE xử lý phụ sau khi nunjucks convert finish
+  modules.gulp.task('njkEndTmp', function(cb) {
+    if(NjkDependents.isFirstCompile) {
+      NjkDependents.isFirstCompile = false;
+    }
+
+    cb();
   });
 }
 
@@ -499,10 +403,14 @@ export const convertNunjuckTask = {
     'name': 'njkTmp',
     'init': _convertNunjuckTmpTask,
   },
+  'endTmp': {
+    'name': 'njkEndTmp',
+  },
   'dist': {
     'name': 'njkDist',
     'init': _convertNunjuckDistTask,
   },
+  'dependent': NjkDependents,
 };
 
 //! ANCHOR - prettierHtmlTask

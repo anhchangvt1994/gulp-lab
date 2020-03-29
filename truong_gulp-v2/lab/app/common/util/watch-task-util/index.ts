@@ -1,5 +1,5 @@
 import APP from '@common/enum/source-enum';
-import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssTmpTask, compileJsTask, compileJsCommonTask, compileJsLibTask, prettierJsTmpTask, convertNunjuckTask, prettierHtmlTask } from '@common/util/gulp-task-util';
+import { convertSassTask, copyImagesTask, copyFontsTask, compileJsTask, convertNunjuckTask } from '@common/util/gulp-task-util';
 import gulp = require('gulp');
 import del = require('del');
 import path = require('path');
@@ -96,9 +96,7 @@ const _watchJsTask = function() {
         let filename = filePath.split('\\').slice(-2)[1];
         const foldername = filePath.split('\\').slice(-2)[0];
 
-        if(
-          filename == 'index.js'
-        ) {
+        if(filename == 'index.js') {
           filename = foldername + '.js';
           const destFilePath = path.resolve(APP.tmp.path, 'js\\' + filename);
 
@@ -122,6 +120,26 @@ const _watchNunjuckTask = function() {
   gulp.watch(APP.src.njk + '/**/*.njk', gulp.series(
     convertNunjuckTask.tmp.name,
   ));
+
+  __groupWatchFiles({
+    'sourcePathUrl': APP.src.njk + '/**/*.njk',
+    'relativeTaskList': {
+      'remove': function(filePath) {
+        let filename = filePath.split('\\').slice(-2)[1];
+        const foldername = filePath.split('\\').slice(-2)[0];
+
+        if(filename == 'index.njk') {
+          filename = foldername + '.html';
+          const destFilePath = path.resolve(APP.tmp.path, filename);
+          console.log(destFilePath);
+
+          del.sync(destFilePath);
+        }
+
+        convertNunjuckTask.dependent.removeDependentFiles(filename);
+      },
+    },
+  });
 };
 
 export const watchNunjuckTask = {

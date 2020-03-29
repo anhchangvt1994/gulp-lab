@@ -9,16 +9,11 @@ import cached = require('gulp-cached');
 import changed = require('gulp-changed');
 import ansiColors = require('ansi-colors');
 import dependents = require('gulp-dependents');
-import ultimateDependents = require('gulp-ultimate-dependent');
-import resolveDependents = require('gulp-resolve-dependencies');
 import print = require('gulp-print');
 import browserSync = require('browser-sync');
 import prettier = require('gulp-prettier');
-import glob = require('glob');
 import tap = require('gulp-tap');
-import split = require('gulp-split-files');
 import es = require('event-stream');
-import browserify = require('browserify');
 import babel = require('gulp-babel');
 import bebelMinify = require('gulp-babel-minify');
 import gulpBrowserify = require('gulp-browserify');
@@ -44,16 +39,11 @@ export default {
   cached,
   changed,
   dependents,
-  ultimateDependents,
-  resolveDependents,
   print: print.default,
   browserSync: browserSync.create(),
   prettier,
-  glob,
   tap,
-  split,
   es,
-  browserify,
   babel,
   bebelMinify,
   gulpBrowserify,

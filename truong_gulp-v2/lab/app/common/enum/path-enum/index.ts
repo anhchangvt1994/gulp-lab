@@ -3,19 +3,11 @@ const strRootDir = __dirname.split('\\app')[0];
 //! ANCHOR    (generate path url method)
 //-- generate path url
 //? tạo path url dựa vào array path url truyền vào
-export const generatePathUrl = function(arrPathUrl) {
-  let strPathUrl = '';
+export const generatePathUrl = function(filePath) {
+  let strPathUrl = strRootDir + "\\" + filePath;
+  console.log(strPathUrl.replace('src', ''));
 
-  arrPathUrl.forEach((strPartOfUrl,id) => {
-    if(id > 0) {
-      strPathUrl += strPartOfUrl;
-    }
-    if(id > 0 && id < arrPathUrl.length - 1) {
-      strPathUrl += '\\';
-    }
-  });
-
-  return strPathUrl;
+  return String(strPathUrl);
 };
 
 //! ANCHOR    (generate full path with specifical directory)

@@ -3,6 +3,14 @@ interface ArrRegexExecFileConstruct {
   'njk'? : RegExp,
 }
 
+interface ArrIndexOfFileItemConstruct {
+  [key:string]: string,
+}
+
+interface ArrIndexOfFileConstruct {
+  'block': ArrIndexOfFileItemConstruct,
+}
+
 interface arrExtensionFileConstruct {
   [key:string]: string,
 }
@@ -31,21 +39,37 @@ const ARR_EXTENSION_FILE: arrExtensionFileConstruct = {
   'NJK_EXTENSION': 'njk',
 };
 
-const ARR_REGEX_EXEC_FILE : ArrRegexExecFileConstruct = {
+const ARR_REGEX_EXEC_FILE: ArrRegexExecFileConstruct = {
   [ARR_EXTENSION_FILE.JS_EXTENSION]: /import(?:["'\s]*[\w*${}\n\r\t, ]+from\s*)?["'\s]["'\s](.*[@\w_-]+)["'\s].*;$/mg,
-  [ARR_EXTENSION_FILE.NJK_EXTENSION]: /{%(?:.*)[extends|include|import]["'\s]["'\s](.*[@\w_-]+)["'].*%}/mg,
+  [ARR_EXTENSION_FILE.NJK_EXTENSION]: /{%(?:.*)[extends|include|import]["'\s](?:.*)["'\s](.*[@\w_-]+)["'].*%}/mg,
+};
+
+const ARR_INDEX_OF_FILE: ArrIndexOfFileConstruct = {
+  'block': {
+    'header': '{% block header %}',
+    'footer': '{% block footer %}',
+  }
 };
 
 class Dependents {
   private _strFileExtension: string;
   private _arrIndexFilePath: ArrIndexFilePathConstruct = {};
   private _arrMainFiles: ArrMainFileConstruct = {};
+  private _arrHeaderExceptionMainFiles: Array<string>; // NOTE chứa những index file ngoại lệ không cần built lại khi thay đổi header của layout trong nunjucks
+  private _arrFooterExceptionMainFiles: Array<string>; // NOTE chứa những index file ngoại lệ không cần built lại khi thay đổi footer của layout trong nunjucks
   private _arrDependentFiles: ArrDependentFileConstruct = {};
   private _regexExecFileContent: RegExp;
+  isFirstCompile: boolean = true;
 
   constructor(strFileExtension: string) {
     this._strFileExtension = strFileExtension;
     this._regexExecFileContent = ARR_REGEX_EXEC_FILE[strFileExtension];
+
+    if(this._strFileExtension === ARR_EXTENSION_FILE.NJK_EXTENSION) {
+      // NOTE khởi tạo mảng exception header, footer khi định nghĩa NjkDependent
+      this._arrHeaderExceptionMainFiles = [];
+      this._arrFooterExceptionMainFiles = [];
+    }
   }
 
   generate(arrFileInfo: ArrFileInfoConstruct) {
@@ -140,6 +164,10 @@ class Dependents {
     if(self._arrIndexFilePath[strTmpFileName]) {
       return [self._arrIndexFilePath[strTmpFileName]];
     } else if(self._arrDependentFiles[strTmpFileName]) {
+      if(self.isFirstCompile) {
+        return ;
+      }
+
       const arrMainFileChanged = self._generateMainFileList(self._arrDependentFiles[strTmpFileName]);
 
       return arrMainFileChanged;
@@ -152,10 +180,40 @@ class Dependents {
     const self = this;
     // NOTE Nếu là index file thì thay bằng tên folder của file index đó
     let strTmpFileName = null;
+    // NOTE replace tất cả những comment trong content file trước khi convert
+    arrNjkFileInfo.content = arrNjkFileInfo.content.toString().replace(/{#[^>]*#}/mg, '');
 
     if(arrNjkFileInfo['file-name'] === 'index.njk') {
       // NOTE Nếu file name là index thì thay bằng folder-name
       strTmpFileName = arrNjkFileInfo['folder-name'] + '.' + ARR_EXTENSION_FILE.NJK_EXTENSION;
+
+      if(
+        arrNjkFileInfo.content.indexOf(ARR_INDEX_OF_FILE.block.header) !== -1 &&
+        self._arrHeaderExceptionMainFiles.indexOf(strTmpFileName) === -1
+      ) {
+        self._arrHeaderExceptionMainFiles.push(strTmpFileName);
+      } else if(
+        arrNjkFileInfo.content.indexOf(ARR_INDEX_OF_FILE.block.header) === -1 &&
+        self._arrHeaderExceptionMainFiles.indexOf(strTmpFileName) !== -1
+      ) {
+        const indexOfHeaderExceptionMainFiles = self._arrHeaderExceptionMainFiles.indexOf(strTmpFileName);
+
+        self._arrHeaderExceptionMainFiles.splice(indexOfHeaderExceptionMainFiles, 1);
+      }
+
+      if(
+        arrNjkFileInfo.content.indexOf(ARR_INDEX_OF_FILE.block.footer) !== -1 &&
+        self._arrFooterExceptionMainFiles.indexOf(strTmpFileName) === -1
+      ) {
+        self._arrFooterExceptionMainFiles.push(strTmpFileName);
+      } else if(
+        arrNjkFileInfo.content.indexOf(ARR_INDEX_OF_FILE.block.footer) === -1 &&
+        self._arrFooterExceptionMainFiles.indexOf(strTmpFileName) !== -1
+      ) {
+        const indexOfFooterExceptionMainFiles = self._arrFooterExceptionMainFiles.indexOf(strTmpFileName);
+
+        self._arrFooterExceptionMainFiles.splice(indexOfFooterExceptionMainFiles, 1);
+      }
     } else {
       // NOTE Nếu file name không phải là index thì giữ nguyên file name
       strTmpFileName = arrNjkFileInfo['file-name'];
@@ -170,8 +228,6 @@ class Dependents {
 
     let arrMatchResult = null;
     let arrTmpCurMainFile = [];
-
-    arrNjkFileInfo.content = arrNjkFileInfo.content.toString().replace(/{#[^>]*#}/mg, '');
 
     while((arrMatchResult = self._regexExecFileContent.exec(arrNjkFileInfo.content)) !== null) {
       // This is necessary to avoid infinite loops with zero-width matches
@@ -232,7 +288,26 @@ class Dependents {
     if(self._arrIndexFilePath[strTmpFileName]) {
       return [self._arrIndexFilePath[strTmpFileName]];
     } else if(self._arrDependentFiles[strTmpFileName]) {
-      const arrMainFileChanged = self._generateMainFileList(self._arrDependentFiles[strTmpFileName]);
+      if(self.isFirstCompile) {
+        return ;
+      }
+
+      let arrCheckOtherCondition = {
+        'block': {
+          'is-check-condition': false,
+          'file-name': null,
+        }
+      };
+
+      if(
+        strTmpFileName === 'header.njk' ||
+        strTmpFileName === 'footer.njk'
+      ) {
+        arrCheckOtherCondition.block['is-check-condition'] = true;
+        arrCheckOtherCondition.block['file-name'] = strTmpFileName;
+      }
+
+      const arrMainFileChanged = self._generateMainNjkFileList(self._arrDependentFiles[strTmpFileName], arrCheckOtherCondition);
 
       return arrMainFileChanged;
     }
@@ -262,11 +337,9 @@ class Dependents {
   }
 
   removeDependentFiles(strFileName) {
-    console.log(strFileName);
     const self = this;
     const arrMainFiles = self._arrMainFiles[strFileName];
     self._arrMainFiles[strFileName] = [];
-    console.log(arrMainFiles);
 
     if(
       arrMainFiles &&
@@ -319,6 +392,56 @@ class Dependents {
 
     return self._generateMainFileList(
       arrTmpDependentCollect,
+      arrTmpMainPathResult
+    );
+  }
+
+  private _generateMainNjkFileList(
+    arrDependentFileCurList: Array<string>,
+    arrCheckOtherCondition,
+    arrTmpMainPathResult: Array<string> = [],
+    arrTmpDependentCollect: Array<string> = [],
+  ) {
+    const self = this;
+
+    arrDependentFileCurList.forEach(function(strDepentFileItem) {
+      if(
+        self._arrIndexFilePath[strDepentFileItem] &&
+        arrTmpMainPathResult.indexOf(self._arrIndexFilePath[strDepentFileItem]) === -1
+      ) {
+        if(arrCheckOtherCondition.block['is-check-condition']) {
+          if(
+            arrCheckOtherCondition.block['file-name'] === 'header.njk' &&
+            self._arrHeaderExceptionMainFiles.indexOf(strDepentFileItem) === -1
+          ) {
+            arrTmpMainPathResult.push(self._arrIndexFilePath[strDepentFileItem]);
+          } else if(
+            arrCheckOtherCondition.block['file-name'] === 'footer.njk' &&
+            self._arrFooterExceptionMainFiles.indexOf(strDepentFileItem) === -1
+          ) {
+            arrTmpMainPathResult.push(self._arrIndexFilePath[strDepentFileItem]);
+          }
+        } else {
+          arrTmpMainPathResult.push(self._arrIndexFilePath[strDepentFileItem]);
+        }
+      } else if(self._arrDependentFiles[strDepentFileItem]) {
+        if(arrTmpDependentCollect.length <= 0) {
+          arrTmpDependentCollect = self._arrDependentFiles[strDepentFileItem];
+        } else {
+          arrTmpDependentCollect.concat(self._arrDependentFiles[strDepentFileItem]);
+        }
+      }
+    });
+
+    if(arrTmpDependentCollect.length <= 0) {
+      return arrTmpMainPathResult ?? [];
+    }
+
+    arrTmpDependentCollect = self._unionArray(arrTmpDependentCollect);
+
+    return self._generateMainNjkFileList(
+      arrTmpDependentCollect,
+      arrCheckOtherCondition,
       arrTmpMainPathResult
     );
   }

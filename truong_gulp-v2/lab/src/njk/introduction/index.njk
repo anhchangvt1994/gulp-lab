@@ -1,4 +1,4 @@
-{% extends objGlobal['path-list']['layout'] %}
+{% extends  objGlobal.path.njk + '/_layout.njk' %}
 
 {% set bodyClass = 'introductionPage' %}
 {% set pageHeadTitle = 'introduction' %}
@@ -8,5 +8,5 @@
 {% block header %}{% endblock %}
 
 {% block body %}
-  {% include objGlobal['path-list']['njk'] + "/introduction/_introduction-section.njk" %}
+  {% include objGlobal.path.njk + "/introduction/_introduction-section.njk" %}
 {% endblock %}
