@@ -22,10 +22,14 @@ import source = require('vinyl-source-stream');
 import rename = require('gulp-rename');
 import buffer = require('vinyl-buffer');
 import uglify = require('gulp-uglify');
+import cleanCss = require('gulp-clean-css');
 import data = require('gulp-data');
 import nunjucksRender = require('gulp-nunjucks-render');
 import del = require('del');
 import path = require('path');
+import emptyDir = require('empty-dir');
+import fs = require('fs');
+import imageMin = require('gulp-imagemin');
 
 export default {
   gulp,
@@ -52,8 +56,12 @@ export default {
   rename,
   buffer,
   uglify,
+  cleanCss,
   data,
   nunjucksRender,
   del,
   path,
+  emptyDir,
+  fs,
+  imageMin,
 }

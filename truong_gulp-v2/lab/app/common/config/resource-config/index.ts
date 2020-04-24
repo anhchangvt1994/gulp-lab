@@ -18,6 +18,7 @@ interface PathListItemDataConstruct {
 interface ResourceConstruct {
   'path': PathListItemDataConstruct,
   'resource': ResourceItemConstruct,
+  'template': ResourceItemConstruct,
 };
 
 const RESOURCE: ResourceConstruct = {
@@ -40,7 +41,9 @@ const RESOURCE: ResourceConstruct = {
       ],
       "arrJsFile": []
     },
+  },
 
+  "template" : {
     "text-page" : {
       "arrCssFile" : [
         "text-style"
@@ -58,8 +61,8 @@ const RESOURCE: ResourceConstruct = {
       "arrJsFile" : [
         "introduction"
       ]
-    }
-  }
+    },
+  },
 };
 
 export default RESOURCE;

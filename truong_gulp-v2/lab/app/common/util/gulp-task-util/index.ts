@@ -2,26 +2,66 @@ import modules from '@common/define/module-define';
 import Dependents from '@common/util/dependent-util';
 import APP from '@common/enum/source-enum';
 import RESOURCE from '@common/config/resource-config';
+import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
 import DATA from '@source-data';
+
+/* ----------------------------- DEFINE VARIABLE ---------------------------- */
+// NOTE Các variales dùng để định nghĩa phần cơ bản
+
+const TYPE_FILE_JS = 'js';
+const TYPE_FILE_CSS = 'css';
+const TYPE_FILE_HTML = 'html';
+
+/* -------------------------------------------------------------------------- */
+
+/* ----------------------------- GLOBAL VARIABLE ---------------------------- */
+let isFirstCompileAll = true;
+
+let _arrReadTmpDirConstructFile = require(APP.src.data + '/tmp-construct-log.json');
+
+if(_arrReadTmpDirConstructFile) {
+  ARR_TMP_CONSTRUCT[TYPE_FILE_CSS] = _arrReadTmpDirConstructFile[TYPE_FILE_CSS];
+  ARR_TMP_CONSTRUCT[TYPE_FILE_JS] = _arrReadTmpDirConstructFile[TYPE_FILE_JS];
+  ARR_TMP_CONSTRUCT[TYPE_FILE_HTML] = _arrReadTmpDirConstructFile[TYPE_FILE_HTML];
+}
+/* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
 //! ANCHOR - __moveFiles
 //? sử dụng để move file từ source sang dir khác
 interface ArrMoveFilesConfigConstruct {
   'sourcePathUrl': string,
+  'cacheFileExt'?: string,
   'targetPathUrl': string,
+  'compressModule'?: any,
 };
 
 const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
-  return modules.gulp.src(arrMoveFilesConfig.sourcePathUrl)
-    .pipe(modules.plumber())
-    .pipe(modules.cached('js'))
-    .pipe(modules.dependents())
-    .pipe(modules.print(
-      filepath => `built: ${filepath}`
-    ))
-    .pipe(modules.gulp.dest(arrMoveFilesConfig.targetPathUrl));
+  if(arrMoveFilesConfig.targetPathUrl.indexOf(APP.tmp.path) === -1) {
+    if(arrMoveFilesConfig.compressModule) {
+      return modules.gulp.src(arrMoveFilesConfig.sourcePathUrl)
+        .pipe(modules.plumber())
+        .pipe(arrMoveFilesConfig.compressModule)
+        .pipe(modules.gulp.dest(arrMoveFilesConfig.targetPathUrl));
+    }
+
+    return modules.gulp.src(arrMoveFilesConfig.sourcePathUrl)
+      .pipe(modules.plumber())
+      .pipe(modules.gulp.dest(arrMoveFilesConfig.targetPathUrl));
+  } else {
+    arrMoveFilesConfig.cacheFileExt = arrMoveFilesConfig.cacheFileExt || '';
+
+    return modules.gulp.src(arrMoveFilesConfig.sourcePathUrl)
+      .pipe(modules.plumber())
+      .pipe(modules.cached(arrMoveFilesConfig.cacheFileExt))
+      .pipe(modules.dependents())
+      .pipe(modules.print(
+        filepath => `copy: ${filepath}`
+      ))
+      .pipe(modules.gulp.dest(arrMoveFilesConfig.targetPathUrl));
+  }
 };
+
 /* -------------------------------------------------------------------------- */
 
 /* ---------------------------------- TASK ---------------------------------- */
@@ -53,31 +93,53 @@ export const cleanTask = {
   }
 };
 
-//! ANCHOR - copyImagesTask
+//! ANCHOR - copyImagesTmpTask
 //-- copy images to tmp ( chỉ dùng khi build vào tmp folder )
+const _copyImagesTmpTask = function() {
+  modules.gulp.task('copyImagesTmp', function() {
+    return modules.gulp.src(APP.src.images + '/**/*.{jpg,png,gif,svg,ico}')
+    .pipe(modules.plumber())
+    .pipe(modules.cached('jpg,png,gif,svg,ico'))
+    .pipe(modules.print(
+      filepath => {
+        return modules.ansiColors.green(`copy image: ${filepath}`);
+      }
+    ))
+    .pipe(modules.copy(
+      APP.tmp.images,
+      {
+        prefix: 2
+        /*chúng ta có thể sử dụng gulp.dest để dẫn đến thư mục cần thiết, nếu chưa có thì auto tạo. Mục đích duy nhất để ta sử dụng prefix là để chúng ta xác định số cấp thư mục vào đến thư mục mà ta cần. Bắt đầu tính từ thư mục gốc
+          vd: từ FADO_EMAIL-V2 vào dist/images thì phải qua 2 cấp thư mục dist/images
+        */
+      }
+    ))
+    .pipe(modules.browserSync.reload({ stream: true }));
+  });
+};
+
+//! ANCHOR - copyImagesDistTask
+//-- copy images to dist ( chỉ dùng khi build vào dist folder )
+const _copyImagesDistTask = function() {
+  modules.gulp.task('copyImagesDist', function() {
+    return modules.gulp.src(APP.src.images + '/**/*.{jpg,png,gif,svg,ico}')
+    .pipe(modules.imageMin([
+      modules.imageMin.gifsicle({interlaced: true}),
+      modules.imageMin.mozjpeg({quality: 80, progressive: true}),
+      modules.imageMin.optipng({optimizationLevel: 5}),
+    ]))
+    .pipe(modules.gulp.dest(APP.dist.images));
+  });
+};
+
 export const copyImagesTask = {
-  'name': 'copyImages',
-  'init': function() {
-    modules.gulp.task('copyImages', function() {
-      return modules.gulp.src(APP.src.images + '**/*.{jpg,png,gif,svg,ico}')
-      .pipe(modules.plumber())
-      .pipe(modules.cached('jpg,png,gif,svg,ico'))
-      .pipe(modules.print(
-        filepath => {
-          return modules.ansiColors.green(`copy image: ${filepath}`);
-        }
-      ))
-      .pipe(modules.copy(
-        APP.tmp.images,
-        {
-          prefix: 2
-          /*chúng ta có thể sử dụng gulp.dest để dẫn đến thư mục cần thiết, nếu chưa có thì auto tạo. Mục đích duy nhất để ta sử dụng prefix là để chúng ta xác định số cấp thư mục vào đến thư mục mà ta cần. Bắt đầu tính từ thư mục gốc
-            vd: từ FADO_EMAIL-V2 vào dist/images thì phải qua 2 cấp thư mục dist/images
-          */
-        }
-      ))
-      .pipe(modules.browserSync.reload({ stream: true }));
-    });
+  'tmp': {
+    'name': 'copyImagesTmp',
+    'init': _copyImagesTmpTask,
+  },
+  'dist': {
+    'name': 'copyImagesDist',
+    'init': _copyImagesDistTask,
   }
 };
 
@@ -143,18 +205,57 @@ const _convertSassTmpTask = function() {
       }
     ))
     .pipe(modules.sass())
+    .pipe(modules.rename(function(path) {
+      // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
+      path.dirname = '';
+
+      // NOTE Nếu construct CSS đối với path file name hiện tại đang rỗng thì nạp vào
+      if(!ARR_TMP_CONSTRUCT[TYPE_FILE_CSS][path.basename]) {
+        ARR_TMP_CONSTRUCT[TYPE_FILE_CSS][path.basename] = generateTmpDirItemConstruct({
+          'file-name': path.basename,
+          'file-path': APP.tmp.css + '/' + path.basename,
+        });
+      }
+
+      if(!isFirstCompileAll) {
+        modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+          if(err) throw err;
+
+          console.log('write file: "tmp-construct-log.json" finish.');
+        });
+      }
+    }))
     .pipe(modules.gulp.dest(APP.tmp.css))
     .pipe(modules.browserSync.reload({ stream: true }));
   });
+
+  // NOTE xử lý phụ sau khi sass compile finish
+  modules.gulp.task('sassEndTmp', function(cb) {
+    cb();
+  })
 };
 
 //-- convert sass to css into dist
 const _convertSassDistTask = function() {
+  // NOTE Nếu trong tmp có sẵn folder css thì bê từ tmp sang, không phải compile lại nữa
   modules.gulp.task('sassDist', function() {
-    return modules.gulp.src(APP.src.scss + '/*.{scss,css}')
-    .pipe(modules.plumber())
-    .pipe(modules.sass({ outputStyle: 'compressed' }))
-    .pipe(modules.gulp.dest(APP.dist.css));
+    if(ARR_TMP_CONSTRUCT[TYPE_FILE_JS]) {
+      return __moveFiles({
+        'sourcePathUrl': APP.tmp.css + '/*.' + TYPE_FILE_CSS,
+        'targetPathUrl': APP.dist.css,
+        'compressModule': modules.cleanCss({compatibility: 'ie8'}),
+      });
+    } else {
+      return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
+      .pipe(modules.plumber())
+      .pipe(modules.sass({ outputStyle: 'compressed' }))
+      .pipe(modules.rename(
+        {
+          'dirname' : '',
+        }
+      ))
+      .pipe(modules.gulp.dest(APP.dist.css));
+    }
   });
 }
 
@@ -162,6 +263,9 @@ export const convertSassTask = {
   'tmp': {
     'name': 'sassTmp',
     'init': _convertSassTmpTask,
+  },
+  'endTmp': {
+    'name': 'sassEndTmp'
   },
   'dist': {
     'name': 'sassDist',
@@ -243,9 +347,27 @@ const _compileJsTmpTask = function() {
               }),
             }
           ))
-          .pipe(modules.rename(
-            foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
-          ))
+          .pipe(modules.rename(function(path) {
+            const strFileName = (foldername!=='js' ? foldername : filename.replace('.js', ''));
+
+            path.basename = strFileName;
+
+            // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
+            if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
+              ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
+                'file-name': path.basename,
+                'file-path': APP.tmp.js + '/' + path.basename,
+              });
+            }
+
+            if(!isFirstCompileAll) {
+              modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+                if(err) throw err;
+
+                console.log('write file: "tmp-construct-log.json" finish.');
+              });
+            }
+          }))
           .pipe(
             modules.gulp.dest(APP.tmp.js)
           );
@@ -256,6 +378,7 @@ const _compileJsTmpTask = function() {
 
   // NOTE xử lý phụ sau khi js compile finish
   modules.gulp.task('jsEndTmp', function(cb) {
+    // NOTE Đánh dấu lượt compile đầu tiên đã hoàn thành
     if(JsDependents.isFirstCompile) {
       JsDependents.isFirstCompile = false;
     }
@@ -266,8 +389,46 @@ const _compileJsTmpTask = function() {
 
 //-- compile js into dist
 const _compileJsDistTask = function() {
-  modules.gulp.task('jsDist', function(done) {
-    // __compileJsDist(APP.src.js + '/**/index.js', done);
+  modules.gulp.task('jsDist', function() {
+    if(ARR_TMP_CONSTRUCT[TYPE_FILE_JS]) {
+      return __moveFiles(
+        {
+          'sourcePathUrl': APP.tmp.js + '/*.' + TYPE_FILE_JS,
+          'targetPathUrl': APP.dist.js,
+          'compressModule': modules.uglify(),
+        }
+      );
+    } else {
+      return modules.gulp.src(APP.src.js + '/**/*.js')
+      .pipe(modules.tap(function(file) {
+
+        // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
+        const filename = file.path.split('\\').slice(-2)[1];
+        const foldername = file.path.split('\\').slice(-2)[0];
+
+        if(
+          filename === 'index.js' ||
+          foldername === 'js'
+        ) {
+          // NOTE Nếu là file index hoặc file thuộc folder js cấp đầu tiên thì mới thực hiện compile
+          modules.gulp.src(file.path)
+          .pipe(modules.gulpBrowserify(
+            {
+              transform: modules.babelify.configure({
+                presets: ["@babel/env"]
+              }),
+            }
+          ))
+          .pipe(modules.rename(
+            foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
+          ))
+          .pipe(modules.uglify())
+          .pipe(
+            modules.gulp.dest(APP.dist.js)
+          );
+        }
+      }))
+    }
   });
 };
 
@@ -343,9 +504,25 @@ const _convertNunjuckTmpTask = function() {
               intRandomNumber : Math.random() * 10
             }
           }))
-          .pipe(modules.rename(
-            foldername + '.html'
-          ))
+          .pipe(modules.rename(function(path) {
+            path.basename = foldername;
+
+            // NOTE Nếu construct HTML đối với path file name hiện tại đang rỗng thì nạp vào
+            if(!ARR_TMP_CONSTRUCT[TYPE_FILE_HTML][path.basename]) {
+              ARR_TMP_CONSTRUCT[TYPE_FILE_HTML][path.basename] = generateTmpDirItemConstruct({
+                'file-name': path.basename,
+                'file-path': APP.tmp.path + '/' + path.basename,
+              });
+            }
+
+            if(!isFirstCompileAll) {
+              modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+                if(err) throw err;
+
+                console.log('write file: "tmp-construct-log.json" finish.');
+              });
+            }
+          }))
           .pipe(modules.gulp.dest(APP.tmp.path))
           .pipe(modules.browserSync.reload({ stream: true }));
         });
@@ -366,35 +543,44 @@ const _convertNunjuckTmpTask = function() {
 //-- convert nunjuck to html into dist
 const _convertNunjuckDistTask = function() {
   modules.gulp.task('njkDist', function() {
-    return modules.gulp.src(APP.src.njk + '/**/*.njk')
-    .pipe(modules.tap(function(file) {
-      // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
-      const filename = file.path.split('\\').slice(-2)[1];
-      const foldername = file.path.split('\\').slice(-2)[0];
+    if(ARR_TMP_CONSTRUCT[TYPE_FILE_HTML]) {
+      return __moveFiles(
+        {
+          'sourcePathUrl': APP.tmp.path + '/*.' + TYPE_FILE_HTML,
+          'targetPathUrl': APP.dist.path,
+        }
+      );
+    } else {
+      return modules.gulp.src(APP.src.njk + '/**/*.njk')
+      .pipe(modules.tap(function(file) {
+        // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
+        const filename = file.path.split('\\').slice(-2)[1];
+        const foldername = file.path.split('\\').slice(-2)[0];
 
-      if(filename === 'index.njk') {
-        modules.gulp.src(file.path)
-        .pipe(modules.data((file) => (
-          {
-            namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
-            data: DATA,
-          }
-        )))
-        .pipe(modules.nunjucksRender({
-          data: {
-            objGlobal: RESOURCE,
-            intRandomNumber: Math.random() * 10
-          }
-        }))
-        .pipe(modules.rename(
-          foldername + '.html'
-        ))
-        .pipe(modules.print(
-          filepath => `built: ${filepath}`
-        ))
-        .pipe(modules.gulp.dest(APP.dist.path));
-      }
-    }));
+        if(filename === 'index.njk') {
+          modules.gulp.src(file.path)
+          .pipe(modules.data((file) => (
+            {
+              namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
+              data: DATA,
+            }
+          )))
+          .pipe(modules.nunjucksRender({
+            data: {
+              objGlobal: RESOURCE,
+              intRandomNumber: Math.random() * 10
+            }
+          }))
+          .pipe(modules.rename(
+            foldername + '.html'
+          ))
+          .pipe(modules.print(
+            filepath => `built: ${filepath}`
+          ))
+          .pipe(modules.gulp.dest(APP.dist.path));
+        }
+      }));
+    }
   });
 };
 
@@ -445,6 +631,26 @@ export const prettierHtmlTask = {
     'name': 'prettierHtmlDist',
     'init': _prettierHtmlDistTask,
   },
+};
+
+//! ANCHOR - doAfterBuildTask
+export const doAfterBuildTask = {
+  'name': 'doAfterBuildTask',
+  'init': function() {
+    modules.gulp.task('doAfterBuildTask', function(cb) {
+      // NOTE ghi nhận lượt buid đầu tiên đã xong
+      isFirstCompileAll = false;
+
+      // NOTE ghi file "tmp-construct-log.json" sau khi lượt build task đầu tiên hoàn thành
+      modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+        if(err) throw err;
+
+        console.log('write file: "tmp-construct-log.json" finish.');
+      });
+
+      cb();
+    });
+  }
 };
 
 //! ANCHOR - browserSyncTask

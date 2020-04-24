@@ -1,8 +1,10 @@
-const _APP_SRC_PATH: string = './src/'; // url của source directory (nơi để dev)
+const _LAB_PATH = __dirname.split('\\app')[0];
 
-const _APP_TMP_PATH: string = './tmp/'; // url của temp directory (nơi để built source deploy)
+const _APP_SRC_PATH: string = _LAB_PATH + '/src/'; // url của source directory (nơi để dev)
 
-const _APP_DIST_PATH: string = './dist/'; // url của dist directory (nơi chứa source production live)
+const _APP_TMP_PATH: string = _LAB_PATH + '/tmp/'; // url của temp directory (nơi để built source deploy)
+
+const _APP_DIST_PATH: string = _LAB_PATH + '/dist/'; // url của dist directory (nơi chứa source production live)
 
 interface AppItemConstruct {
   path: string,
@@ -17,12 +19,16 @@ interface AppItemConstruct {
 };
 
 interface AppConstruct {
+  lab: {path: string},
   src: AppItemConstruct,
   tmp: AppItemConstruct,
   dist: AppItemConstruct,
 };
 
 const APP: AppConstruct = {
+  lab: {
+    path: _LAB_PATH,
+  },
   src: {
     path : _APP_SRC_PATH,
     scss : _APP_SRC_PATH + 'scss',

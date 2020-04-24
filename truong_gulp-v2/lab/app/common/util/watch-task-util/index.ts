@@ -151,9 +151,9 @@ export const watchNunjuckTask = {
 //-- watch image files change task
 const _watchImagesTask = function() {
   __groupWatchFiles({
-    'sourcePathUrl': APP.src.images + '**/*.{jpg,png,gif,svg,ico}',
+    'sourcePathUrl': APP.src.images + '/**/*.{jpg,png,gif,svg,ico}',
     'relativeTaskList': {
-      'add': copyImagesTask.name,
+      'add': copyImagesTask.tmp.name,
     },
   });
 };
