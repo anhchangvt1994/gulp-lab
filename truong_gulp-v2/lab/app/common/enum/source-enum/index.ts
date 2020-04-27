@@ -1,4 +1,4 @@
-const _LAB_PATH = __dirname.split('\\app')[0];
+const _LAB_PATH = __dirname.split('\\app')[0].replace(/\\/g, '/');
 
 const _APP_SRC_PATH: string = _LAB_PATH + '/src/'; // url của source directory (nơi để dev)
 

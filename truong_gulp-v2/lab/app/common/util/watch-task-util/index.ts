@@ -164,9 +164,9 @@ export const watchImagesTask = {
 };
 
 //! ANCHOR  - watchTmpTask
-//-- watch tmp files change task
-const _watchTmpTask = function() {
-  gulp.task('watch', function() {
+//? watch tmp files change task (with template njk)
+const _watchTmpWithTemplateTask = function() {
+  gulp.task('watch-tmp-with-template', function() {
     _watchScssTask();
     _watchFontsTask();
     _watchJsTask();
@@ -175,8 +175,24 @@ const _watchTmpTask = function() {
   });
 };
 
-export const watchTmpTask = {
-  'name': 'watch',
-  'init': _watchTmpTask,
+//? watch tmp files change task (with template njk)
+const _watchTmpWithoutTemplateTask = function() {
+  gulp.task('watch', function() {
+    _watchScssTask();
+    _watchFontsTask();
+    _watchJsTask();
+    _watchImagesTask();
+  });
+};
+
+export const watchTask = {
+  'tmp_with_template': {
+    'name': 'watch-tmp-with-template',
+    'init': _watchTmpWithTemplateTask,
+  },
+  'tmp': {
+    'name': 'watch',
+    'init': _watchTmpWithoutTemplateTask,
+  },
 };
 /* -------------------------------------------------------------------------- */

@@ -18,7 +18,6 @@ interface PathListItemDataConstruct {
 interface ResourceConstruct {
   'path': PathListItemDataConstruct,
   'resource': ResourceItemConstruct,
-  'template': ResourceItemConstruct,
 };
 
 const RESOURCE: ResourceConstruct = {
@@ -35,31 +34,24 @@ const RESOURCE: ResourceConstruct = {
     },
 
     "common" : {
-      "arrCssFile": [
-        "header",
-        "footer"
-      ],
+      "arrCssFile": [],
       "arrJsFile": []
     },
-  },
-
-  "template" : {
     "text-page" : {
       "arrCssFile" : [
-        "text-style"
+        "text-page-style"
       ],
       "arrJsFile" : [
-        "text",
-        "test01"
+        "text-page",
       ]
     },
 
     "introduction-page" : {
       "arrCssFile" : [
-        "introduction-style"
+        "introduction-page-style"
       ],
       "arrJsFile" : [
-        "introduction"
+        "introduction-page"
       ]
     },
   },

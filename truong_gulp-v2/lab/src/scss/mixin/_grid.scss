@@ -1,0 +1,94 @@
+//=======================================================
+// Định nghĩa mixin cho media query trên từng breakpoint
+//=======================================================
+// screen up
+//-------------------------------------------------------
+@include screen-xxs-up {
+  @media (min-width: $var-grid-xxs-min) {
+    @content;
+  }
+}
+
+@include screen-sm-up {
+  @media (min-width: $var-grid-sm-min) {
+    @content;
+  }
+}
+
+@include screen-md-up {
+  @media (min-width: $var-grid-md-min) {
+    @content;
+  }
+}
+
+@include screen-lg-up {
+  @media (min-width: $var-grid-lg-min) {
+    @content;
+  }
+}
+
+@include screen-xl-up {
+  @media (min-width: $var-grid-xl-min) {
+    @content;
+  }
+}
+
+// screen down
+//-------------------------------------------------------
+@include screen-xxs-down {
+  @media (min-width: $var-grid-xxs-max) {
+    @content;
+  }
+}
+
+@include screen-sm-down {
+  @media (min-width: $var-grid-sm-max) {
+    @content;
+  }
+}
+
+@include screen-md-down {
+  @media (min-width: $var-grid-md-max) {
+    @content;
+  }
+}
+
+@include screen-lg-down {
+  @media (min-width: $var-grid-max) {
+    @content;
+  }
+}
+
+@include screen-xl-down {
+  @media (min-width: $var-grid-max) {
+    @content;
+  }
+}
+
+// screen other custom
+//-------------------------------------------------------
+@include screen-other-custom($_var-grid-custom, $_var-grid-status: 'up') {
+  @if not is-string($_var-grid-status) or ($_var-grid-status != 'up' and $_var-grid-status != 'down') {
+    @error 'grid status phải là `up` hoặc `down`';
+  }
+
+  @else if not is-absolute-length($_var-grid-custom) {
+    @error 'grid custom phải là số với đơn vị `px`';
+  }
+
+  // screen custom grid up
+  //----------------------------------
+  @else if $_var-grid-status != 'up' {
+    @media (min-width: $_var-grid-custom) {
+      @content;
+    }
+  }
+
+  // screen custom grid down
+  //----------------------------------
+  @else if $_var-grid-status != 'down' {
+    @media (max-width: $_var-grid-custom) {
+      @content;
+    }
+  }
+}

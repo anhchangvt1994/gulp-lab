@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "gulp": "gulp",
     "dev": "gulp dev",
+    "dev:temp": "gulp dev:template",
     "prod": "gulp prod"
   },
   "author": "",

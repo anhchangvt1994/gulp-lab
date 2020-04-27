@@ -5,6 +5,7 @@ import RESOURCE from '@common/config/resource-config';
 import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
 import DATA from '@source-data';
 
+console.log(APP.lab.path);
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 

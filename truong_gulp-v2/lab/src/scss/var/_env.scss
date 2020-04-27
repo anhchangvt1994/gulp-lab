@@ -1,0 +1,16 @@
+// ######################################################
+// Env variable
+// ######################################################
+$var-cache-ver-suffix: ''; // ! Tham số cache truyền từ nodejs vào sử dụng để clearcache nếu up version mới
+
+@if getScssGlobal('cacheVer') != '' {
+  $var-cache-ver-suffix: '?v=' + getScssGlobal('cacheVer');
+}
+
+// Url
+// -------------------
+$var-image-url: '../image';
+$var-image-bg-url: '../image/bg';
+$var-image-icon-url: $var-image-url + '/icon';
+$var-image-icon-svg-url: $var-image-url + '/icon-svg';
+$var-upload-url: '../../upload';
