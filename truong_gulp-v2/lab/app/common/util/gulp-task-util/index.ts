@@ -5,7 +5,8 @@ import RESOURCE from '@common/config/resource-config';
 import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
 import DATA from '@source-data';
 
-console.log(APP.lab.path);
+import GenerateRandom from '@common/enum/random-enum';
+
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
@@ -16,6 +17,9 @@ const TYPE_FILE_HTML = 'html';
 /* -------------------------------------------------------------------------- */
 
 /* ----------------------------- GLOBAL VARIABLE ---------------------------- */
+// NOTE Cứ 10 phút sẽ tự random một version mới để xóa cache
+const generateRandomNumber = new GenerateRandom();
+
 let isFirstCompileAll = true;
 
 let _arrReadTmpDirConstructFile = require(APP.src.data + '/tmp-construct-log.json');
@@ -63,6 +67,28 @@ const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
   }
 };
 
+//! ANCHOR - update sass cache version
+const __updateSassCacheVersion = function() {
+  modules.gulp.src(APP.src.scss + '/var/_root-env.scss')
+  .pipe(modules.rename({
+    basename: '_env',
+  }))
+  .pipe(modules.sassVars({
+    '$var-cache-version': generateRandomNumber.version,
+  }))
+  .pipe(modules.gulp.dest(APP.src.scss + '/var/'));
+};
+
+/* ------------------------------- INIT METHOD ------------------------------ */
+// NOTE First generate new cache version for sass
+__updateSassCacheVersion();
+
+// NOTE Update new sass's cache version after each 10 minutes
+setInterval(function() {
+  generateRandomNumber.updateVersion();
+
+  __updateSassCacheVersion();
+}, 60000);
 /* -------------------------------------------------------------------------- */
 
 /* ---------------------------------- TASK ---------------------------------- */
@@ -202,6 +228,10 @@ const _convertSassTmpTask = function() {
     .pipe(modules.dependents())
     .pipe(modules.print(
       (filepath) => {
+        if(filepath.indexOf('_env.scss') !== -1) {
+          return modules.ansiColors.blueBright(`update new sass cache version: ${generateRandomNumber.version}`);
+        }
+
         return modules.ansiColors.yellow(`compile sass: ${filepath}`);
       }
     ))
@@ -496,6 +526,7 @@ const _convertNunjuckTmpTask = function() {
             {
               namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
               data: DATA,
+              cacheVersion: generateRandomNumber.version,
             }
           )))
           .pipe(modules.nunjucksRender({

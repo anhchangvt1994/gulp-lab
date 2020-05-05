@@ -33,7 +33,7 @@ const APP: AppConstruct = {
     path : _APP_SRC_PATH,
     scss : _APP_SRC_PATH + 'scss',
     js : _APP_SRC_PATH + 'js',
-    images : _APP_SRC_PATH + 'images',
+    images : _APP_SRC_PATH + 'image',
     fonts : _APP_SRC_PATH + 'fonts',
     njk : _APP_SRC_PATH + 'njk',
     data : _APP_SRC_PATH + 'data',
@@ -44,7 +44,7 @@ const APP: AppConstruct = {
     path : _APP_TMP_PATH,
     css : _APP_TMP_PATH + 'css',
     js : _APP_TMP_PATH + 'js',
-    images : _APP_TMP_PATH + 'images',
+    images : _APP_TMP_PATH + 'image',
     fonts : _APP_TMP_PATH + 'fonts',
   },
 
@@ -52,7 +52,7 @@ const APP: AppConstruct = {
     path : _APP_DIST_PATH,
     css : _APP_DIST_PATH + 'css',
     js : _APP_DIST_PATH + 'js',
-    images : _APP_DIST_PATH + 'images',
+    images : _APP_DIST_PATH + 'image',
     fonts : _APP_DIST_PATH + 'fonts',
   }
 };
