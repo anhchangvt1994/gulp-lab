@@ -2,5 +2,83 @@
 // Định nghĩa màu
 //========================================================
 $var-main-color: #0d1019;
-$var-yellow: #ffa500;
-$var-yellow-light: #f2d537;
+$var-main-color-root: $var-main-color;
+$var-main-color-light: lighten($var-main-color, 70%);
+$var-main-color-lighter: lighten($var-main-color, 80%);
+$var-main-color-lightest: lighten($var-main-color, 83%);
+$var-main-color-dark: lighten($var-main-color, 26%);
+$var-main-color-darker: lighten($var-main-color, 10%);
+
+$var-orange: #ffa500;
+$var-orange-root: $var-orange;
+$var-orange-light: lighten($var-orange, 10%);
+$var-orange-lighter: lighten($var-orange, 35%);
+$var-orange-lightest: lighten($var-orange, 45%);
+$var-orange-dark: darken($var-orange, 10%);
+$var-orange-darker: darken($var-orange, 18%);
+$var-orange-overlay: blend-hardlight($var-orange,lighten($var-main-color, 70%));
+
+$var-yellow: #f2d537;
+
+$var-yellow-root: $var-yellow;
+$var-yellow-light: lighten($var-yellow, 10%);
+$var-yellow-lighter: lighten($var-yellow, 35%);
+$var-yellow-lightest: lighten($var-yellow, 45%);
+$var-yellow-dark: darken($var-yellow, 10%);
+$var-yellow-darker: darken($var-yellow, 18%);
+$var-yellow-overlay: blend-hardlight($var-yellow,lighten($var-main-color, 70%));
+
+$map-palette-color-with-level: (
+  'main': (
+    'lightest': $var-main-color-lightest,
+    'lighter': $var-main-color-lighter,
+    'light': $var-main-color-light,
+    'root': $var-main-color-root,
+    'dark': $var-main-color-dark,
+    'darker': $var-main-color-darker,
+  ),
+  'orange': (
+    'lightest': $var-orange-lightest,
+    'lighter': $var-orange-lighter,
+    'light': $var-orange-light,
+    'root': $var-orange-root,
+    'dark': $var-orange-dark,
+    'darker': $var-orange-darker,
+  ),
+  'yellow': (
+    'lightest': $var-yellow-lightest,
+    'lighter': $var-yellow-lighter,
+    'light': $var-yellow-light,
+    'root': $var-yellow-root,
+    'dark': $var-yellow-dark,
+    'darker': $var-yellow-darker,
+  ),
+);
+
+// -------------------
+// Map level color
+// -------------------
+$map-color-level-index: (
+  'lightest': -3,
+  'lighter': -2,
+  'light': -1,
+  'root': 0,
+  'dark': 1,
+  'darker': 2,
+);
+
+$map-color-level-key: (
+  -3: 'lightest',
+  -2: 'lighter',
+  -1: 'light',
+  0: 'root',
+  1: 'dark',
+  2: 'darker',
+);
+
+$var-max-color-level-index: 2;
+
+$map-color-overlay: (
+  'orange': $var-orange-overlay,
+  'yellow': $var-yellow-overlay,
+);

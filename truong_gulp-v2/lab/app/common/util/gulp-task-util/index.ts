@@ -79,6 +79,10 @@ const __updateSassCacheVersion = function() {
   .pipe(modules.gulp.dest(APP.src.scss + '/var/'));
 };
 
+const __updateNjkVersion = function() {
+  console.log(modules.ansiColors.blueBright(`update new Nunjucks cache version: ${generateRandomNumber.version}`));
+};
+
 /* ------------------------------- INIT METHOD ------------------------------ */
 // NOTE First generate new cache version for sass
 __updateSassCacheVersion();
@@ -88,7 +92,8 @@ setInterval(function() {
   generateRandomNumber.updateVersion();
 
   __updateSassCacheVersion();
-}, 60000);
+  __updateNjkVersion();
+}, 600000);
 /* -------------------------------------------------------------------------- */
 
 /* ---------------------------------- TASK ---------------------------------- */

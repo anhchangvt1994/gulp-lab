@@ -1,0 +1,10 @@
+//======================================================
+// Định nghĩa công thức tính space (dựa trên bội số 8)
+//======================================================
+@function get-space-from-base($_int-scale) {
+  @if is-number($_int-scale) {
+    @error 'param of get-space-from-base must be a number!';
+  }
+
+  @return $var-base-space * $_int-scale;
+}
