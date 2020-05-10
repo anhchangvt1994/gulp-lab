@@ -1,0 +1,7 @@
+{% extends objGlobal.path.njk + '/_layout.njk' %}
+
+{% set bodyClass = 'cooking-loading-page' %}
+
+{% block body %}
+  {% include objGlobal.path.global + "/component/cooking-loading-page/_cooking-loading-section.njk" %}
+{% endblock %}

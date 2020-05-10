@@ -31,6 +31,7 @@ import emptyDir = require('empty-dir');
 import fs = require('fs');
 import imageMin = require('gulp-imagemin');
 import sassVars = require('gulp-sass-variables');
+import tsPathAlias = require('gulp-ts-path-alias');
 
 export default {
   gulp,
@@ -66,4 +67,5 @@ export default {
   fs,
   imageMin,
   sassVars,
+  tsPathAlias,
 }

@@ -1,4 +1,4 @@
-import { generateDirFromRootPath } from '@common/enum/path-enum';
+import APP from '@common/enum/source-enum';
 
 interface ResourceItemDataConstruct {
   "arrCssFile": string[],
@@ -12,6 +12,7 @@ interface ResourceItemConstruct {
 interface PathListItemDataConstruct {
   'src': string,
   'njk': string,
+  'global': string,
   'layout': string,
 };
 
@@ -22,9 +23,10 @@ interface ResourceConstruct {
 
 const RESOURCE: ResourceConstruct = {
   'path': {
-    'src': generateDirFromRootPath('/src'),
-    'njk': generateDirFromRootPath('/src/njk'),
-    'layout': generateDirFromRootPath('/src/njk/_layout.njk'),
+    'src': APP.src.path,
+    'njk': APP.src.njk,
+    'global': APP.src.njk + '/global',
+    'layout': APP.src.njk + '/_layout.njk',
   },
 
   'resource': {
@@ -37,14 +39,6 @@ const RESOURCE: ResourceConstruct = {
       "arrCssFile": [],
       "arrJsFile": []
     },
-    "text-page" : {
-      "arrCssFile" : [
-        "text-page-style"
-      ],
-      "arrJsFile" : [
-        "text-page",
-      ]
-    },
 
     "introduction-page" : {
       "arrCssFile" : [
@@ -53,6 +47,16 @@ const RESOURCE: ResourceConstruct = {
       "arrJsFile" : [
         "introduction-page"
       ]
+    },
+
+    // NOTE component css, js
+    "cooking-loading-page" : {
+      'arrCssFile': [
+        'cooking-loading-page-style',
+      ],
+      'arrJsFile': [
+        'cooking-loading-page',
+      ],
     },
   },
 };

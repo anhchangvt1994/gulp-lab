@@ -4,6 +4,7 @@ import APP from '@common/enum/source-enum';
 import RESOURCE from '@common/config/resource-config';
 import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
 import DATA from '@source-data';
+import EVN_APPLICATION from '@common/define/enviroment-define';
 
 import GenerateRandom from '@common/enum/random-enum';
 
@@ -379,7 +380,15 @@ const _compileJsTmpTask = function() {
           .pipe(modules.gulpBrowserify(
             {
               transform: modules.babelify.configure({
-                presets: ["@babel/env"]
+                presets: ["@babel/env"],
+                plugins: [
+                  ['module-resolver', {
+                    "alias": {
+                      "~jsPath": './src/js',
+                      "~jsPartialPath": './src/js/partial',
+                    }
+                  }]
+                ]
               }),
             }
           ))
@@ -529,9 +538,16 @@ const _convertNunjuckTmpTask = function() {
           ))
           .pipe(modules.data((file) => (
             {
-              namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
+              file: file.path.split('\\')[file.path.split('\\').length - 2],
+              namepage: file.path.split('\\')[file.path.split('\\').length - 2],
               data: DATA,
-              cacheVersion: generateRandomNumber.version,
+              CACHE_VERSION: generateRandomNumber.version,
+              EVN_APPLICATION: EVN_APPLICATION.dev,
+              LAYOUT_CONFIG: {
+                'imageUrl' : APP.tmp.images,
+                'cssUrl' : APP.tmp.css,
+                'jsUrl' : APP.tmp.js,
+              }
             }
           )))
           .pipe(modules.nunjucksRender({
@@ -580,44 +596,42 @@ const _convertNunjuckTmpTask = function() {
 //-- convert nunjuck to html into dist
 const _convertNunjuckDistTask = function() {
   modules.gulp.task('njkDist', function() {
-    if(ARR_TMP_CONSTRUCT[TYPE_FILE_HTML]) {
-      return __moveFiles(
-        {
-          'sourcePathUrl': APP.tmp.path + '/*.' + TYPE_FILE_HTML,
-          'targetPathUrl': APP.dist.path,
-        }
-      );
-    } else {
-      return modules.gulp.src(APP.src.njk + '/**/*.njk')
-      .pipe(modules.tap(function(file) {
-        // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
-        const filename = file.path.split('\\').slice(-2)[1];
-        const foldername = file.path.split('\\').slice(-2)[0];
+    return modules.gulp.src(APP.src.njk + '/**/*.njk')
+    .pipe(modules.tap(function(file) {
+      // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
+      const filename = file.path.split('\\').slice(-2)[1];
+      const foldername = file.path.split('\\').slice(-2)[0];
 
-        if(filename === 'index.njk') {
-          modules.gulp.src(file.path)
-          .pipe(modules.data((file) => (
-            {
-              namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
-              data: DATA,
+      if(filename === 'index.njk') {
+        modules.gulp.src(file.path)
+        .pipe(modules.data((file) => (
+          {
+            namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
+            data: DATA,
+            cacheVersion: generateRandomNumber.version,
+            EVN_APPLICATION: EVN_APPLICATION.prod,
+            LAYOUT_CONFIG: {
+              'imageUrl' : APP.dist.images,
+              'cssUrl' : APP.dist.css,
+              'jsUrl' : APP.dist.js,
             }
-          )))
-          .pipe(modules.nunjucksRender({
-            data: {
-              objGlobal: RESOURCE,
-              intRandomNumber: Math.random() * 10
-            }
-          }))
-          .pipe(modules.rename(
-            foldername + '.html'
-          ))
-          .pipe(modules.print(
-            filepath => `built: ${filepath}`
-          ))
-          .pipe(modules.gulp.dest(APP.dist.path));
-        }
-      }));
-    }
+          }
+        )))
+        .pipe(modules.nunjucksRender({
+          data: {
+            objGlobal: RESOURCE,
+            intRandomNumber: Math.random() * 10
+          }
+        }))
+        .pipe(modules.rename(
+          foldername + '.html'
+        ))
+        .pipe(modules.print(
+          filepath => `built: ${filepath}`
+        ))
+        .pipe(modules.gulp.dest(APP.dist.path));
+      }
+    }));
   });
 };
 
