@@ -32,6 +32,10 @@ import fs = require('fs');
 import imageMin = require('gulp-imagemin');
 import sassVars = require('gulp-sass-variables');
 import tsPathAlias = require('gulp-ts-path-alias');
+// import notify = require('gulp-notify');
+const notifiter:any = require('node-notifier');
+import notifierToaster = require('node-notifier/notifiers/toaster');
+// import util = require('gulp-util');
 
 export default {
   gulp,
@@ -68,4 +72,8 @@ export default {
   imageMin,
   sassVars,
   tsPathAlias,
+  // notify,
+  notifierToaster,
+  // notifiter
+  // util,
 }

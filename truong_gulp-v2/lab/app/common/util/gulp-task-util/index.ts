@@ -84,6 +84,18 @@ const __updateNjkVersion = function() {
   console.log(modules.ansiColors.blueBright(`update new Nunjucks cache version: ${generateRandomNumber.version}`));
 };
 
+const notifierToaster = new modules.notifierToaster();
+
+const __reportError = function (error) {
+    notifierToaster.notify({
+        title: 'Task Failed [' + error.plugin + ']',
+        message: "line " + error.line + " in " + error.file.replace(/^.*[\\\/]/, '') + "\n" + error.message,
+    });
+
+    // Prevent the 'watch' task from stopping
+    this.emit('end');
+}
+
 /* ------------------------------- INIT METHOD ------------------------------ */
 // NOTE First generate new cache version for sass
 __updateSassCacheVersion();
@@ -227,9 +239,9 @@ export const copyFontsTask = {
 const _convertSassTmpTask = function() {
   modules.gulp.task('sassTmp', function() {
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
-    .pipe(modules.plumber(function(err) {
-      console.log(modules.ansiColors.red(err.message));
-    }))
+    // .pipe(modules.plumber(function(err) {
+    //   console.log(modules.ansiColors.red(err.message));
+    // }))
     .pipe(modules.cached())
     .pipe(modules.dependents())
     .pipe(modules.print(
@@ -242,6 +254,7 @@ const _convertSassTmpTask = function() {
       }
     ))
     .pipe(modules.sass())
+    .on('error', __reportError)
     .pipe(modules.rename(function(path) {
       // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
       path.dirname = '';
@@ -715,7 +728,7 @@ export const browserSyncTask = {
         reloadDelay: 300, // Fix htmlprocess watch not change
         open: false, // Stop auto open browser
         cors: false,
-        notify: {
+        notifier: {
           styles: [
             "display: none; ",
             "padding: 5px 5px;",
