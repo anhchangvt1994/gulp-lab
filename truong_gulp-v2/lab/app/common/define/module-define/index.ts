@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import gulp = require('gulp');
 import clean = require('gulp-clean');
 import copy = require('gulp-copy');
@@ -32,10 +33,11 @@ import fs = require('fs');
 import imageMin = require('gulp-imagemin');
 import sassVars = require('gulp-sass-variables');
 import tsPathAlias = require('gulp-ts-path-alias');
-// import notify = require('gulp-notify');
-const notifiter:any = require('node-notifier');
+import notify = require('gulp-notify');
+import notifier = require('node-notifier');
 import notifierToaster = require('node-notifier/notifiers/toaster');
-// import util = require('gulp-util');
+import open = require('open');
+import util = require('gulp-util');
 
 export default {
   gulp,
@@ -72,8 +74,10 @@ export default {
   imageMin,
   sassVars,
   tsPathAlias,
-  // notify,
+  notify,
   notifierToaster,
-  // notifiter
-  // util,
+  notifier,
+  util,
+  uuidv4,
+  open,
 }

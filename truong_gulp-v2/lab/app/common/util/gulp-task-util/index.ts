@@ -14,6 +14,14 @@ import GenerateRandom from '@common/enum/random-enum';
 const TYPE_FILE_JS = 'js';
 const TYPE_FILE_CSS = 'css';
 const TYPE_FILE_HTML = 'html';
+const TYPE_FILE_NJK = 'njk';
+
+const ARR_FILE_EXTENTION_NAME = {
+  [TYPE_FILE_CSS]: 'CSS',
+  [TYPE_FILE_HTML]: 'HTML',
+  [TYPE_FILE_JS]: 'JavasScript',
+  [TYPE_FILE_NJK]: 'Nunjucks',
+};
 
 /* -------------------------------------------------------------------------- */
 
@@ -30,6 +38,14 @@ if(_arrReadTmpDirConstructFile) {
   ARR_TMP_CONSTRUCT[TYPE_FILE_JS] = _arrReadTmpDirConstructFile[TYPE_FILE_JS];
   ARR_TMP_CONSTRUCT[TYPE_FILE_HTML] = _arrReadTmpDirConstructFile[TYPE_FILE_HTML];
 }
+
+// NOTE Khai báo mảng chứa errors ở lượt build đầu tiên (để hiển thị error ở cuối danh sách build)
+const _arrErrorMess = [];
+
+// NOTE Định nghĩa style highlight text bằng "gulp-util"
+const _highlight = modules.util.colors.white.bgRed;
+const _textColorRed = modules.util.colors.red;
+const _textColorYellow = modules.util.colors.yellow;
 /* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
@@ -84,13 +100,32 @@ const __updateNjkVersion = function() {
   console.log(modules.ansiColors.blueBright(`update new Nunjucks cache version: ${generateRandomNumber.version}`));
 };
 
-const notifierToaster = new modules.notifierToaster();
+//! ANCHOR - generate report error
+const __generateReqortError = function(err, extFileName) {
+  let report = '\n---------------- ' + ARR_FILE_EXTENTION_NAME[extFileName] + ' ----------------\n\n';
+  report += _highlight('TASK:') + _textColorRed(' [' + err.plugin + ']') + '\n';
+  report += _highlight('PROB:') + ' ' + _textColorRed(err.message) + '\n';
+  if(err.line) {
+      report += _highlight('LINE:') + ' ' + _textColorYellow(err.line) + '\n';
+  }
+  if(err.file) {
+    report += _highlight('FILE:') + ' ' + _textColorRed(err.file);
+
+    if(err.line) {
+      report += _textColorYellow(':' + err.line) + '\n';
+    }
+  }
+
+  return report;
+};
 
 const __reportError = function (error) {
-    notifierToaster.notify({
+    modules.notify({
         title: 'Task Failed [' + error.plugin + ']',
         message: "line " + error.line + " in " + error.file.replace(/^.*[\\\/]/, '') + "\n" + error.message,
-    });
+        wait: true,
+        sound: false,
+    }).write(error);
 
     // Prevent the 'watch' task from stopping
     this.emit('end');
@@ -239,9 +274,6 @@ export const copyFontsTask = {
 const _convertSassTmpTask = function() {
   modules.gulp.task('sassTmp', function() {
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
-    // .pipe(modules.plumber(function(err) {
-    //   console.log(modules.ansiColors.red(err.message));
-    // }))
     .pipe(modules.cached())
     .pipe(modules.dependents())
     .pipe(modules.print(
@@ -254,7 +286,15 @@ const _convertSassTmpTask = function() {
       }
     ))
     .pipe(modules.sass())
-    .on('error', __reportError)
+    .on('error', function(err) {
+      if(isFirstCompileAll) {
+        _arrErrorMess.push(__generateReqortError(err, TYPE_FILE_CSS));
+      } else {
+        console.log(__generateReqortError(err, TYPE_FILE_CSS));
+      }
+
+      this.emit('end');
+    })
     .pipe(modules.rename(function(path) {
       // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
       path.dirname = '';
@@ -390,7 +430,8 @@ const _compileJsTmpTask = function() {
               return modules.ansiColors.yellow(`compile js: ${filepath}`);
             }
           ))
-          .pipe(modules.gulpBrowserify(
+          .pipe(
+            modules.gulpBrowserify(
             {
               transform: modules.babelify.configure({
                 presets: ["@babel/env"],
@@ -403,8 +444,17 @@ const _compileJsTmpTask = function() {
                   }]
                 ]
               }),
+            })
+          )
+          .on('error', function(err) {
+            if(isFirstCompileAll) {
+              _arrErrorMess.push(__generateReqortError(err, TYPE_FILE_JS));
+            } else {
+              console.log(__generateReqortError(err, TYPE_FILE_JS));
             }
-          ))
+
+            this.emit('end');
+          })
           .pipe(modules.rename(function(path) {
             const strFileName = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
@@ -570,6 +620,15 @@ const _convertNunjuckTmpTask = function() {
               intRandomNumber : Math.random() * 10
             }
           }))
+          .on('error', function(err) {
+            if(isFirstCompileAll) {
+              _arrErrorMess.push(__generateReqortError(err, TYPE_FILE_NJK));
+            } else {
+              console.log(__generateReqortError(err, TYPE_FILE_NJK));
+            }
+
+            this.emit('end');
+          })
           .pipe(modules.rename(function(path) {
             path.basename = foldername;
 
@@ -711,6 +770,15 @@ export const doAfterBuildTask = {
 
         console.log('write file: "tmp-construct-log.json" finish.');
       });
+
+      // NOTE Sau khi build xong lượt đầu thì forEach để in error ra nếu có
+      if(_arrErrorMess) {
+        setTimeout(function() {
+          _arrErrorMess.forEach(function(strError) {
+            console.log(strError);
+          });
+        }, 1000);
+      }
 
       cb();
     });
