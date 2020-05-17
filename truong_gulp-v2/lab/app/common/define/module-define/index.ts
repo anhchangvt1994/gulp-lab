@@ -38,6 +38,7 @@ import notifier = require('node-notifier');
 import notifierToaster = require('node-notifier/notifiers/toaster');
 import open = require('open');
 import util = require('gulp-util');
+import eslint = require('gulp-eslint');
 
 export default {
   gulp,
@@ -80,4 +81,5 @@ export default {
   util,
   uuidv4,
   open,
+  eslint,
 }

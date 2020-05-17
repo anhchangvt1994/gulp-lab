@@ -8,6 +8,8 @@ import EVN_APPLICATION from '@common/define/enviroment-define';
 
 import GenerateRandom from '@common/enum/random-enum';
 
+import { isEmpty as _isEmpty, forIn as _forIn } from 'lodash';
+
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
@@ -40,7 +42,7 @@ if(_arrReadTmpDirConstructFile) {
 }
 
 // NOTE Khai báo mảng chứa errors ở lượt build đầu tiên (để hiển thị error ở cuối danh sách build)
-const _arrErrorMess = [];
+const _arrErrorMess = {};
 
 // NOTE Định nghĩa style highlight text bằng "gulp-util"
 const _highlight = modules.util.colors.white.bgRed;
@@ -100,23 +102,73 @@ const __updateNjkVersion = function() {
   console.log(modules.ansiColors.blueBright(`update new Nunjucks cache version: ${generateRandomNumber.version}`));
 };
 
-//! ANCHOR - generate report error
-const __generateReqortError = function(err, extFileName) {
-  let report = '\n---------------- ' + ARR_FILE_EXTENTION_NAME[extFileName] + ' ----------------\n\n';
+//! ANCHOR - handler report error
+//? method __handerReportError dùng để xử lý error callback hoặc đưa vào danh sách các errors cần in cuối bảng, hoặc in trực tiếp error hiện tại
+const __handlerReqortError = function(err, extFileName) {
+  let intLineNumber = null;
+  let strFilePath = null;
+  let strFileName = null;
+
+  let report = '\n\n---------------- ' + ARR_FILE_EXTENTION_NAME[extFileName] + ' ----------------\n\n';
   report += _highlight('TASK:') + _textColorRed(' [' + err.plugin + ']') + '\n';
   report += _highlight('PROB:') + ' ' + _textColorRed(err.message) + '\n';
   if(err.line) {
       report += _highlight('LINE:') + ' ' + _textColorYellow(err.line) + '\n';
+      intLineNumber = err.line;
+  } else if(err.lineNumber) {
+    report += _highlight('LINE:') + ' ' + _textColorYellow(err.lineNumber) + '\n';
+    intLineNumber = err.lineNumber;
   }
+
   if(err.file) {
-    report += _highlight('FILE:') + ' ' + _textColorRed(err.file);
-
-    if(err.line) {
-      report += _textColorYellow(':' + err.line) + '\n';
-    }
+    strFilePath = err.file;
+  } else if(err.fileName) {
+    strFilePath = err.fileName;
   }
 
-  return report;
+  report += _highlight('FILE:') + ' ' + _textColorRed(strFilePath);
+
+  if(intLineNumber) {
+    report += _textColorYellow(':' + intLineNumber) + '\n';
+  }
+
+  if(
+    !isFirstCompileAll &&
+    _isEmpty(_arrErrorMess)
+  ) {
+    console.log(report);
+  } else if(
+    isFirstCompileAll &&
+    !_isEmpty(_arrErrorMess)
+  ) {
+    strFilePath = strFilePath.replace(/\\/g,'/');
+    strFileName = strFilePath.split('/').slice(-2)[1];
+
+    if(
+      strFileName === 'index.js' ||
+      strFileName === 'index.njk'
+    ) {
+      strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
+    }
+
+    _arrErrorMess[strFileName] = report;
+
+    _forIn(_arrErrorMess, function(strError) {
+      console.log(strError);
+    })
+  } else if(isFirstCompileAll) {
+    strFilePath = strFilePath.replace(/\\/g,'/');
+    strFileName = strFilePath.split('/').slice(-2)[1];
+
+    if(
+      strFileName === 'index.js' ||
+      strFileName === 'index.njk'
+    ) {
+      strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
+    }
+
+    _arrErrorMess[strFileName] = report;
+  }
 };
 
 const __reportError = function (error) {
@@ -274,6 +326,11 @@ export const copyFontsTask = {
 const _convertSassTmpTask = function() {
   modules.gulp.task('sassTmp', function() {
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
+    .pipe(modules.plumber({
+      'errorHandler': function(err) {
+        __handlerReqortError(err, TYPE_FILE_CSS);
+      }
+    }))
     .pipe(modules.cached())
     .pipe(modules.dependents())
     .pipe(modules.print(
@@ -286,15 +343,6 @@ const _convertSassTmpTask = function() {
       }
     ))
     .pipe(modules.sass())
-    .on('error', function(err) {
-      if(isFirstCompileAll) {
-        _arrErrorMess.push(__generateReqortError(err, TYPE_FILE_CSS));
-      } else {
-        console.log(__generateReqortError(err, TYPE_FILE_CSS));
-      }
-
-      this.emit('end');
-    })
     .pipe(modules.rename(function(path) {
       // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
       path.dirname = '';
@@ -391,7 +439,14 @@ const JsDependents = new Dependents('js');
 const _compileJsTmpTask = function() {
   modules.gulp.task('jsTmp', function() {
     return modules.gulp.src(APP.src.js + '/**/*.js')
+    .pipe(modules.plumber({
+      'errorHandler': function(err) {
+        __handlerReqortError(err, TYPE_FILE_JS);
+      }
+    }))
     .pipe(modules.cached('.js'))
+    .pipe(modules.eslint('eslint-config.json'))
+    .pipe(modules.eslint.failOnError())
     .pipe(modules.tap(function(file) {
 
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
@@ -425,6 +480,7 @@ const _compileJsTmpTask = function() {
           const foldername = strFilePath.split('\\').slice(-2)[0];
 
           modules.gulp.src(strFilePath)
+          .pipe(modules.plumber())
           .pipe(modules.print(
             filepath => {
               return modules.ansiColors.yellow(`compile js: ${filepath}`);
@@ -446,15 +502,6 @@ const _compileJsTmpTask = function() {
               }),
             })
           )
-          .on('error', function(err) {
-            if(isFirstCompileAll) {
-              _arrErrorMess.push(__generateReqortError(err, TYPE_FILE_JS));
-            } else {
-              console.log(__generateReqortError(err, TYPE_FILE_JS));
-            }
-
-            this.emit('end');
-          })
           .pipe(modules.rename(function(path) {
             const strFileName = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
@@ -594,6 +641,11 @@ const _convertNunjuckTmpTask = function() {
           const foldername = indexPath.split('\\').slice(-2)[0];
 
           modules.gulp.src(indexPath)
+          .pipe(modules.plumber({
+            'errorHandler': function(err) {
+              __handlerReqortError(err, TYPE_FILE_NJK);
+            }
+          }))
           .pipe(modules.print(
             filepath => {
               return modules.ansiColors.yellow(`convert njk: ${filepath}`);
@@ -620,15 +672,6 @@ const _convertNunjuckTmpTask = function() {
               intRandomNumber : Math.random() * 10
             }
           }))
-          .on('error', function(err) {
-            if(isFirstCompileAll) {
-              _arrErrorMess.push(__generateReqortError(err, TYPE_FILE_NJK));
-            } else {
-              console.log(__generateReqortError(err, TYPE_FILE_NJK));
-            }
-
-            this.emit('end');
-          })
           .pipe(modules.rename(function(path) {
             path.basename = foldername;
 
@@ -774,9 +817,9 @@ export const doAfterBuildTask = {
       // NOTE Sau khi build xong lượt đầu thì forEach để in error ra nếu có
       if(_arrErrorMess) {
         setTimeout(function() {
-          _arrErrorMess.forEach(function(strError) {
+          _forIn(_arrErrorMess, function(strError) {
             console.log(strError);
-          });
+          })
         }, 1000);
       }
 
