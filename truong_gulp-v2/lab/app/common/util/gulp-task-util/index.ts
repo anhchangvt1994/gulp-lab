@@ -1,29 +1,24 @@
 import modules from '@common/define/module-define';
 import Dependents from '@common/util/dependent-util';
+import HandlerReportUtil from '@common/util/hanlder-report-util';
 import APP from '@common/enum/source-enum';
 import RESOURCE from '@common/config/resource-config';
 import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
 import DATA from '@source-data';
 import EVN_APPLICATION from '@common/define/enviroment-define';
+import { ARR_FILE_EXTENSION } from '@common/define/file-define';
 
 import GenerateRandom from '@common/enum/random-enum';
 
-import { isEmpty as _isEmpty, forIn as _forIn } from 'lodash';
+import { forIn as _forIn } from 'lodash';
 
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
-const TYPE_FILE_JS = 'js';
-const TYPE_FILE_CSS = 'css';
-const TYPE_FILE_HTML = 'html';
-const TYPE_FILE_NJK = 'njk';
-
-const ARR_FILE_EXTENTION_NAME = {
-  [TYPE_FILE_CSS]: 'CSS',
-  [TYPE_FILE_HTML]: 'HTML',
-  [TYPE_FILE_JS]: 'JavasScript',
-  [TYPE_FILE_NJK]: 'Nunjucks',
-};
+const TYPE_FILE_JS = ARR_FILE_EXTENSION.js;
+const TYPE_FILE_CSS = ARR_FILE_EXTENSION.css;
+const TYPE_FILE_HTML = ARR_FILE_EXTENSION.html;
+const TYPE_FILE_NJK = ARR_FILE_EXTENSION.njk;
 
 /* -------------------------------------------------------------------------- */
 
@@ -44,10 +39,6 @@ if(_arrReadTmpDirConstructFile) {
 // NOTE Khai báo mảng chứa errors ở lượt build đầu tiên (để hiển thị error ở cuối danh sách build)
 const _arrErrorMess = {};
 
-// NOTE Định nghĩa style highlight text bằng "gulp-util"
-const _highlight = modules.util.colors.white.bgRed;
-const _textColorRed = modules.util.colors.red;
-const _textColorYellow = modules.util.colors.yellow;
 /* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
@@ -102,75 +93,6 @@ const __updateNjkVersion = function() {
   console.log(modules.ansiColors.blueBright(`update new Nunjucks cache version: ${generateRandomNumber.version}`));
 };
 
-//! ANCHOR - handler report error
-//? method __handerReportError dùng để xử lý error callback hoặc đưa vào danh sách các errors cần in cuối bảng, hoặc in trực tiếp error hiện tại
-const __handlerReqortError = function(err, extFileName) {
-  let intLineNumber = null;
-  let strFilePath = null;
-  let strFileName = null;
-
-  let report = '\n\n---------------- ' + ARR_FILE_EXTENTION_NAME[extFileName] + ' ----------------\n\n';
-  report += _highlight('TASK:') + _textColorRed(' [' + err.plugin + ']') + '\n';
-  report += _highlight('PROB:') + ' ' + _textColorRed(err.message) + '\n';
-  if(err.line) {
-      report += _highlight('LINE:') + ' ' + _textColorYellow(err.line) + '\n';
-      intLineNumber = err.line;
-  } else if(err.lineNumber) {
-    report += _highlight('LINE:') + ' ' + _textColorYellow(err.lineNumber) + '\n';
-    intLineNumber = err.lineNumber;
-  }
-
-  if(err.file) {
-    strFilePath = err.file;
-  } else if(err.fileName) {
-    strFilePath = err.fileName;
-  }
-
-  report += _highlight('FILE:') + ' ' + _textColorRed(strFilePath);
-
-  if(intLineNumber) {
-    report += _textColorYellow(':' + intLineNumber) + '\n';
-  }
-
-  if(
-    !isFirstCompileAll &&
-    _isEmpty(_arrErrorMess)
-  ) {
-    console.log(report);
-  } else if(
-    isFirstCompileAll &&
-    !_isEmpty(_arrErrorMess)
-  ) {
-    strFilePath = strFilePath.replace(/\\/g,'/');
-    strFileName = strFilePath.split('/').slice(-2)[1];
-
-    if(
-      strFileName === 'index.js' ||
-      strFileName === 'index.njk'
-    ) {
-      strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
-    }
-
-    _arrErrorMess[strFileName] = report;
-
-    _forIn(_arrErrorMess, function(strError) {
-      console.log(strError);
-    })
-  } else if(isFirstCompileAll) {
-    strFilePath = strFilePath.replace(/\\/g,'/');
-    strFileName = strFilePath.split('/').slice(-2)[1];
-
-    if(
-      strFileName === 'index.js' ||
-      strFileName === 'index.njk'
-    ) {
-      strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
-    }
-
-    _arrErrorMess[strFileName] = report;
-  }
-};
-
 const __reportError = function (error) {
     modules.notify({
         title: 'Task Failed [' + error.plugin + ']',
@@ -194,6 +116,10 @@ setInterval(function() {
   __updateSassCacheVersion();
   __updateNjkVersion();
 }, 600000);
+
+//! ANCHOR - handler report error
+//? method khai báo __handlerReqortUtil = new HandlerReportUtil() dùng để xử lý error callback hoặc đưa vào danh sách các errors cần in cuối bảng, hoặc in trực tiếp error hiện tại
+const __handlerReqortUtil = new HandlerReportUtil();
 /* -------------------------------------------------------------------------- */
 
 /* ---------------------------------- TASK ---------------------------------- */
@@ -328,7 +254,7 @@ const _convertSassTmpTask = function() {
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
     .pipe(modules.plumber({
       'errorHandler': function(err) {
-        __handlerReqortError(err, TYPE_FILE_CSS);
+        __handlerReqortUtil.handlerError(err, TYPE_FILE_CSS, isFirstCompileAll);
       }
     }))
     .pipe(modules.cached())
@@ -441,7 +367,7 @@ const _compileJsTmpTask = function() {
     return modules.gulp.src(APP.src.js + '/**/*.js')
     .pipe(modules.plumber({
       'errorHandler': function(err) {
-        __handlerReqortError(err, TYPE_FILE_JS);
+        __handlerReqortUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
       }
     }))
     .pipe(modules.cached('.js'))
@@ -643,7 +569,7 @@ const _convertNunjuckTmpTask = function() {
           modules.gulp.src(indexPath)
           .pipe(modules.plumber({
             'errorHandler': function(err) {
-              __handlerReqortError(err, TYPE_FILE_NJK);
+              __handlerReqortUtil.handlerError(err, TYPE_FILE_NJK, isFirstCompileAll);
             }
           }))
           .pipe(modules.print(
@@ -815,9 +741,9 @@ export const doAfterBuildTask = {
       });
 
       // NOTE Sau khi build xong lượt đầu thì forEach để in error ra nếu có
-      if(_arrErrorMess) {
+      if(__handlerReqortUtil.arrError) {
         setTimeout(function() {
-          _forIn(_arrErrorMess, function(strError) {
+          _forIn(__handlerReqortUtil.arrError, function(strError) {
             console.log(strError);
           })
         }, 1000);
