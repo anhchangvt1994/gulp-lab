@@ -55,7 +55,9 @@ class HandlerReportUtil {
       !isFirstCompileAll &&
       _isEmpty(self.arrError)
     ) {
-      console.log(report);
+      setTimeout(function() {
+        console.log(report);
+      }, 150);
     } else if(
       !isFirstCompileAll &&
       !_isEmpty(self.arrError)
@@ -72,9 +74,13 @@ class HandlerReportUtil {
 
       self.arrError[strFileName] = report;
 
-      _forIn(self.arrError, function(strError) {
-        console.log(strError);
-      })
+      setTimeout(function() {
+        _forIn(self.arrError, function(strError) {
+          if(strError) {
+            console.log(strError);
+          }
+        });
+      }, 150);
     } else if(isFirstCompileAll) {
       strFilePath = strFilePath.replace(/\\/g,'/');
       strFileName = strFilePath.split('/').slice(-2)[1];
@@ -89,6 +95,28 @@ class HandlerReportUtil {
       self.arrError[strFileName] = report;
     }
   }; // handlerError()
+
+  checkUpdateError(
+    isStillError: boolean,
+    strFileName: string
+  ) {
+    if(isStillError) {
+      return;
+    }
+
+    const self = this;
+    self.arrError[strFileName] = null;
+
+    if(!_isEmpty(self.arrError)) {
+      setTimeout(function() {
+        _forIn(self.arrError, function(strError) {
+          if(strError) {
+            console.log(strError);
+          }
+        });
+      }, 150);
+    }
+  }; // checkUpdateError()
 }
 
 export default HandlerReportUtil;

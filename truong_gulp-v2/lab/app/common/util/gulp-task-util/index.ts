@@ -35,10 +35,6 @@ if(_arrReadTmpDirConstructFile) {
   ARR_TMP_CONSTRUCT[TYPE_FILE_JS] = _arrReadTmpDirConstructFile[TYPE_FILE_JS];
   ARR_TMP_CONSTRUCT[TYPE_FILE_HTML] = _arrReadTmpDirConstructFile[TYPE_FILE_HTML];
 }
-
-// NOTE Khai báo mảng chứa errors ở lượt build đầu tiên (để hiển thị error ở cuối danh sách build)
-const _arrErrorMess = {};
-
 /* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
@@ -364,9 +360,12 @@ const JsDependents = new Dependents('js');
 
 const _compileJsTmpTask = function() {
   modules.gulp.task('jsTmp', function() {
+    let _isError = false;
+
     return modules.gulp.src(APP.src.js + '/**/*.js')
     .pipe(modules.plumber({
       'errorHandler': function(err) {
+        _isError = true;
         __handlerReqortUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
       }
     }))
@@ -374,7 +373,6 @@ const _compileJsTmpTask = function() {
     .pipe(modules.eslint('eslint-config.json'))
     .pipe(modules.eslint.failOnError())
     .pipe(modules.tap(function(file) {
-
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
       const filename = file.path.split('\\').slice(-2)[1];
       const foldername = file.path.split('\\').slice(-2)[0];
@@ -400,13 +398,18 @@ const _compileJsTmpTask = function() {
         });
       }
 
+      let strFileName = (foldername!=='js' ? foldername + '.' + TYPE_FILE_JS : filename);
+
+      if(!isFirstCompileAll) {
+        setTimeout(function() {
+          __handlerReqortUtil.checkUpdateError(_isError, strFileName)
+          _isError = false;
+        });
+      }
+
       if(filePathData) {
         filePathData.forEach(function(strFilePath) {
-          const filename = strFilePath.split('\\').slice(-2)[1];
-          const foldername = strFilePath.split('\\').slice(-2)[0];
-
           modules.gulp.src(strFilePath)
-          .pipe(modules.plumber())
           .pipe(modules.print(
             filepath => {
               return modules.ansiColors.yellow(`compile js: ${filepath}`);
@@ -429,7 +432,7 @@ const _compileJsTmpTask = function() {
             })
           )
           .pipe(modules.rename(function(path) {
-            const strFileName = (foldername!=='js' ? foldername : filename.replace('.js', ''));
+            strFileName = strFileName.replace('.js', '');
 
             path.basename = strFileName;
 
