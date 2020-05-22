@@ -16,6 +16,7 @@ class HandlerReportUtil {
   constructor() {}
 
   //! ANCHOR - handlerError
+  // NOTE - Nhận error, phân giải custom report và hiển thị ra terminal
   handlerError(
     err:any,
     extFileName: string,
@@ -96,6 +97,8 @@ class HandlerReportUtil {
     }
   }; // handlerError()
 
+  //! ANCHOR - checkUpdateError
+  // NOTE - Nếu có error mà trước đó file được rebuild không có error thì sẽ replace error của key file name tương ứng = null, và check xem còn error nào trong danh sách không, nếu còn thì tiếp tục report
   checkUpdateError(
     isStillError: boolean,
     strFileName: string

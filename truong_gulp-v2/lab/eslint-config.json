@@ -1,6 +1,7 @@
 {
 	"extends": "eslint:recommended",
 	"rules": {
+    "no-import-assign": 1,
 		"no-alert": 1,
 		"no-bitwise": 0,
 		"camelcase": 1,
@@ -15,7 +16,8 @@
 		"$": false
   },
   "parserOptions": {
-    "ecmaVersion": 2017
+    "ecmaVersion": 2017,
+    "sourceType": "module"
   },
 	"env": {
 		"browser": true,

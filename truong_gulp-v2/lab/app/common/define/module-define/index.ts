@@ -26,6 +26,7 @@ import uglify = require('gulp-uglify');
 import cleanCss = require('gulp-clean-css');
 import data = require('gulp-data');
 import nunjucksRender = require('gulp-nunjucks-render');
+import gulpNunjucks = require('gulp-nunjucks');
 import del = require('del');
 import path = require('path');
 import emptyDir = require('empty-dir');
@@ -68,6 +69,7 @@ export default {
   cleanCss,
   data,
   nunjucksRender,
+  gulpNunjucks,
   del,
   path,
   emptyDir,

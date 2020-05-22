@@ -400,6 +400,7 @@ const _compileJsTmpTask = function() {
 
       let strFileName = (foldername!=='js' ? foldername + '.' + TYPE_FILE_JS : filename);
 
+      // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
       if(!isFirstCompileAll) {
         setTimeout(function() {
           __handlerReqortUtil.checkUpdateError(_isError, strFileName)
@@ -410,6 +411,12 @@ const _compileJsTmpTask = function() {
       if(filePathData) {
         filePathData.forEach(function(strFilePath) {
           modules.gulp.src(strFilePath)
+          .pipe(modules.plumber({
+            'errorHandler': function(err) {
+              _isError = true;
+              __handlerReqortUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
+            }
+          }))
           .pipe(modules.print(
             filepath => {
               return modules.ansiColors.yellow(`compile js: ${filepath}`);
@@ -537,6 +544,8 @@ const NjkDependents = new Dependents('njk');
 
 const _convertNunjuckTmpTask = function() {
   modules.gulp.task('njkTmp', function() {
+    let _isError = false;
+
     return modules.gulp.src(APP.src.njk + '/**/*.njk')
     .pipe(modules.cached('.njk'))
     .pipe(modules.tap(function(file) {
@@ -572,6 +581,7 @@ const _convertNunjuckTmpTask = function() {
           modules.gulp.src(indexPath)
           .pipe(modules.plumber({
             'errorHandler': function(err) {
+              _isError = true;
               __handlerReqortUtil.handlerError(err, TYPE_FILE_NJK, isFirstCompileAll);
             }
           }))
@@ -603,6 +613,14 @@ const _convertNunjuckTmpTask = function() {
           }))
           .pipe(modules.rename(function(path) {
             path.basename = foldername;
+
+            // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
+            if(!isFirstCompileAll) {
+              setTimeout(function() {
+                __handlerReqortUtil.checkUpdateError(_isError, foldername + '.' + TYPE_FILE_NJK);
+                _isError = false;
+              });
+            }
 
             // NOTE Nếu construct HTML đối với path file name hiện tại đang rỗng thì nạp vào
             if(!ARR_TMP_CONSTRUCT[TYPE_FILE_HTML][path.basename]) {
