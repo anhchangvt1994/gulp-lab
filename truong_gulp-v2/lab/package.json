@@ -11,11 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "gulp": "^4.0.2",
-    "ts-node": "^8.6.2",
-    "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.7.5",
-    "uuid": "^8.0.0"
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
@@ -27,7 +23,10 @@
     "browser-sync": "^2.26.7",
     "del": "^5.1.0",
     "empty-dir": "^2.0.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.20.2",
     "event-stream": "^4.0.1",
+    "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-babel-minify": "^0.5.1",
     "gulp-browserify": "^0.5.1",
@@ -53,9 +52,11 @@
     "gulp-ts-path-alias": "^1.0.3",
     "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.8",
-    "lodash": "^4.17.15",
     "node-notifier": "^7.0.0",
-    "open": "^7.0.3",
+    "ts-node": "^8.10.2",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.9.3",
+    "uuid": "^8.1.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   }

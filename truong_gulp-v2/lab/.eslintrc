@@ -1,0 +1,63 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "jquery": true
+  },
+
+  "root": true,
+
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/warnings",
+    "plugin:import/errors"
+  ],
+
+  "rules": {
+    "arrow-parens": ["error", "always"],
+    "camelcase": "off",
+    "comma-dangle": ["error", "only-multiline"],
+    "class-methods-use-this": "off",
+    "function-paren-newline": "off",
+    "import/no-unresolved": 2,
+    "import/no-useless-path-segments": "error",
+    "import/no-unused-modules": [1, {"unusedExports": true}],
+    "indent": "off",
+    "max-len": [
+      "error",
+      {
+        "code": 100,
+        "ignoreUrls": true,
+        "ignoreRegExpLiterals": true,
+        "ignoreStrings": true
+      }
+    ],
+    "no-console": "off",
+    "no-mixed-operators": "off",
+    "no-restricted-globals": "off",
+    "no-underscore-dangle": "off",
+    "object-curly-newline": ["error", { "consistent": true }]
+  },
+
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["~jsPath", "./src/js"],
+          ["~jsPartialPath", "./src/js/partial"]
+        ]
+      },
+      "extensions": [".js"]
+    }
+  },
+
+  "globals": {
+		"$": false
+  },
+
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module"
+  }
+}

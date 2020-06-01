@@ -10,23 +10,148 @@ interface ArrErrorConstruct {
   [key:string]: string,
 };
 
-class HandlerReportUtil {
+class HandlerErrorUtil {
   arrError: ArrErrorConstruct = {};
 
   constructor() {}
 
   //! ANCHOR - handlerError
-  // NOTE - Nhận error, phân giải custom report và hiển thị ra terminal
+  // NOTE - Dựng khung xử lý nạp error theo các cases cụ thể
   handlerError(
-    err:any,
+    err: any,
     extFileName: string,
-    isFirstCompileAll?: boolean
+    isFirstCompileAll?: boolean,
+    isMultiCheck?: boolean,
   ) {
     const self = this;
 
+    // NOTE - Nếu là lần đầu build thì nạp error vào arrError
+    if(isFirstCompileAll) {
+      self._addErrorList(
+        err,
+        extFileName
+      );
+    }
+
+    // NOTE - ngược lại nếu arrError không rỗng thì nạp error vào arrError
+    else if(!_isEmpty(self.arrError)) {
+      self._addErrorList(
+        err,
+        extFileName
+      );
+    }
+
+    // NOTE - Ngược lại nếu nhận được cờ isMultiCheck (trường hợp rebuid lại khi remove/copy paste files) thì nạp error vào arrError
+    else if(isMultiCheck) {
+      self._addErrorList(
+        err,
+        extFileName
+      );
+    }
+
+    // NOTE - Ngược lại nếu không nằm ở những trường hợp trên thì in error ra luôn, không cần nạp
+    else {
+      if(!_isEmpty(err)) {
+        let strFilePath = null;
+        let strFileName = null;
+
+        if(err.file) {
+          strFilePath = err.file;
+        } else if(err.fileName) {
+          strFilePath = err.fileName;
+        }
+
+        strFilePath = strFilePath.replace(/\\/g,'/');
+        strFileName = strFilePath.split('/').slice(-2)[1];
+
+        if(
+          strFileName === 'index.js' ||
+          strFileName === 'index.njk'
+        ) {
+          strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
+        }
+
+        self.reportError(self._generateCustomError(err, strFilePath, extFileName));
+      }
+    }
+  }; // handlerError()
+
+  //! ANCHOR - checkClearError
+  // NOTE - Dùng check file hiện tại còn error hay không? Nếu không còn thì set về null
+  checkClearError(
+    isError: boolean,
+    fileName: string
+  ) {
+    const self = this;
+
+    // NOTE - Nếu arrError rỗng hoặc cờ isError đã được bật thì không cần thực thi checkClearError
+    if(
+      _isEmpty(self.arrError) ||
+      isError
+    ) {
+      return;
+    }
+
+    self.arrError[fileName] = null;
+  } // checkClearError()
+
+  //! ANCHOR - reportError
+  // NOTE - Check điều kiện hiển thị error, có thể là arrError hoặc chỉ 1 dòng error
+  reportError(customError?: string) {
+    const self = this;
+
+    if(customError) {
+      console.log(customError);
+      return;
+    } else if(!_isEmpty(self.arrError)){
+      _forIn(self.arrError, function(err) {
+        if(err) {
+          console.log(err);
+        }
+      })
+    }
+  } // reportError()
+
+  //! ANCHOR - _addErrorList
+  private _addErrorList(
+    err: any,
+    extFileName: string,
+  ) {
+    const self = this;
+
+    if(!_isEmpty(err)) {
+      let strFilePath = null;
+      let strFileName = null;
+
+      if(err.file) {
+        strFilePath = err.file;
+      } else if(err.fileName) {
+        strFilePath = err.fileName;
+      }
+
+      strFilePath = strFilePath.replace(/\\/g,'/');
+      strFileName = strFilePath.split('/').slice(-2)[1];
+
+      if(
+        strFileName === 'index.js' ||
+        strFileName === 'index.njk'
+      ) {
+        strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
+      }
+
+      self.arrError[strFileName] = self._generateCustomError(err, strFilePath, extFileName);
+    }
+  } // _addErrorList()
+
+  //! ANCHOR - _generateCustomError
+  private _generateCustomError(
+    err: any,
+    strFilePath: string,
+    extFileName: string
+  ) : string {
+    const self = this;
+
     let intLineNumber = null;
-    let strFilePath = null;
-    let strFileName = null;
 
     let report = '\n\n---------------- ' + ARR_FILE_NAME[extFileName] + ' ----------------\n\n';
 
@@ -40,86 +165,14 @@ class HandlerReportUtil {
       intLineNumber = err.lineNumber;
     }
 
-    if(err.file) {
-      strFilePath = err.file;
-    } else if(err.fileName) {
-      strFilePath = err.fileName;
-    }
-
     report += _highlight('FILE:') + ' ' + _textColorRed(strFilePath);
 
     if(intLineNumber) {
       report += _textColorYellow(':' + intLineNumber) + '\n';
     }
 
-    if(
-      !isFirstCompileAll &&
-      _isEmpty(self.arrError)
-    ) {
-      setTimeout(function() {
-        console.log(report);
-      }, 150);
-    } else if(
-      !isFirstCompileAll &&
-      !_isEmpty(self.arrError)
-    ) {
-      strFilePath = strFilePath.replace(/\\/g,'/');
-      strFileName = strFilePath.split('/').slice(-2)[1];
-
-      if(
-        strFileName === 'index.js' ||
-        strFileName === 'index.njk'
-      ) {
-        strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
-      }
-
-      self.arrError[strFileName] = report;
-
-      setTimeout(function() {
-        _forIn(self.arrError, function(strError) {
-          if(strError) {
-            console.log(strError);
-          }
-        });
-      }, 150);
-    } else if(isFirstCompileAll) {
-      strFilePath = strFilePath.replace(/\\/g,'/');
-      strFileName = strFilePath.split('/').slice(-2)[1];
-
-      if(
-        strFileName === 'index.js' ||
-        strFileName === 'index.njk'
-      ) {
-        strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
-      }
-
-      self.arrError[strFileName] = report;
-    }
-  }; // handlerError()
-
-  //! ANCHOR - checkUpdateError
-  // NOTE - Nếu có error mà trước đó file được rebuild không có error thì sẽ replace error của key file name tương ứng = null, và check xem còn error nào trong danh sách không, nếu còn thì tiếp tục report
-  checkUpdateError(
-    isStillError: boolean,
-    strFileName: string
-  ) {
-    if(isStillError) {
-      return;
-    }
-
-    const self = this;
-    self.arrError[strFileName] = null;
-
-    if(!_isEmpty(self.arrError)) {
-      setTimeout(function() {
-        _forIn(self.arrError, function(strError) {
-          if(strError) {
-            console.log(strError);
-          }
-        });
-      }, 150);
-    }
-  }; // checkUpdateError()
+    return report;
+  }
 }
 
-export default HandlerReportUtil;
+export default HandlerErrorUtil;

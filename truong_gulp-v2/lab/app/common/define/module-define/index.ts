@@ -37,7 +37,6 @@ import tsPathAlias = require('gulp-ts-path-alias');
 import notify = require('gulp-notify');
 import notifier = require('node-notifier');
 import notifierToaster = require('node-notifier/notifiers/toaster');
-import open = require('open');
 import util = require('gulp-util');
 import eslint = require('gulp-eslint');
 
@@ -82,6 +81,5 @@ export default {
   notifier,
   util,
   uuidv4,
-  open,
   eslint,
 }

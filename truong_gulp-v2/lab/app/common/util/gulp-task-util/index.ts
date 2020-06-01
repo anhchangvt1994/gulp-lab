@@ -1,6 +1,6 @@
 import modules from '@common/define/module-define';
 import Dependents from '@common/util/dependent-util';
-import HandlerReportUtil from '@common/util/hanlder-report-util';
+import HandlerErrorUtil from '@common/util/hanlder-report-util';
 import APP from '@common/enum/source-enum';
 import RESOURCE from '@common/config/resource-config';
 import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
@@ -114,8 +114,8 @@ setInterval(function() {
 }, 600000);
 
 //! ANCHOR - handler report error
-//? method khai báo __handlerReqortUtil = new HandlerReportUtil() dùng để xử lý error callback hoặc đưa vào danh sách các errors cần in cuối bảng, hoặc in trực tiếp error hiện tại
-const __handlerReqortUtil = new HandlerReportUtil();
+//? method khai báo __handlerErrorUtil = new HandlerErrorUtil() dùng để xử lý error callback hoặc đưa vào danh sách các errors cần in cuối bảng, hoặc in trực tiếp error hiện tại
+const __handlerErrorUtil = new HandlerErrorUtil();
 /* -------------------------------------------------------------------------- */
 
 /* ---------------------------------- TASK ---------------------------------- */
@@ -250,7 +250,7 @@ const _convertSassTmpTask = function() {
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
     .pipe(modules.plumber({
       'errorHandler': function(err) {
-        __handlerReqortUtil.handlerError(err, TYPE_FILE_CSS, isFirstCompileAll);
+        __handlerErrorUtil.handlerError(err, TYPE_FILE_CSS, isFirstCompileAll);
       }
     }))
     .pipe(modules.cached())
@@ -365,17 +365,19 @@ const _compileJsTmpTask = function() {
     return modules.gulp.src(APP.src.js + '/**/*.js')
     .pipe(modules.plumber({
       'errorHandler': function(err) {
+        console.log(err);
         _isError = true;
-        __handlerReqortUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
+        __handlerErrorUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
       }
     }))
     .pipe(modules.cached('.js'))
-    .pipe(modules.eslint('eslint-config.json'))
+    .pipe(modules.eslint())
     .pipe(modules.eslint.failOnError())
     .pipe(modules.tap(function(file) {
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
       const filename = file.path.split('\\').slice(-2)[1];
       const foldername = file.path.split('\\').slice(-2)[0];
+      let strFileName = null;
 
       let filePathData = null;
 
@@ -396,72 +398,74 @@ const _compileJsTmpTask = function() {
           'file-name': filename,
           'content': file.contents,
         });
+
+
       }
 
-      let strFileName = (foldername!=='js' ? foldername + '.' + TYPE_FILE_JS : filename);
+      strFileName = (foldername !== TYPE_FILE_JS ? foldername + '.' + TYPE_FILE_JS : filename);
+
+      // if(filePathData) {
+      //   filePathData.forEach(function(strFilePath) {
+      //     modules.gulp.src(strFilePath)
+      //     .pipe(modules.plumber({
+      //       'errorHandler': function(err) {
+      //         _isError = true;
+      //         __handlerErrorUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
+      //       }
+      //     }))
+      //     .pipe(modules.print(
+      //       filepath => {
+      //         return modules.ansiColors.yellow(`compile js: ${filepath}`);
+      //       }
+      //     ))
+      //     .pipe(
+      //       modules.gulpBrowserify(
+      //       {
+      //         transform: modules.babelify.configure({
+      //           presets: ["@babel/env"],
+      //           plugins: [
+      //             ['module-resolver', {
+      //               "alias": {
+      //                 "~jsPath": './src/js',
+      //                 "~jsPartialPath": './src/js/partial',
+      //               }
+      //             }]
+      //           ]
+      //         }),
+      //       })
+      //     )
+      //     .pipe(modules.rename(function(path) {
+      //       path.basename = strFileName.replace('.js', '');
+
+      //       // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
+      //       if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
+      //         ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
+      //           'file-name': path.basename,
+      //           'file-path': APP.tmp.js + '/' + path.basename,
+      //         });
+      //       }
+
+      //       if(!isFirstCompileAll) {
+      //         modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+      //           if(err) throw err;
+
+      //           console.log('write file: "tmp-construct-log.json" finish.');
+      //         });
+      //       }
+      //     }))
+      //     .pipe(
+      //       modules.gulp.dest(APP.tmp.js)
+      //     );
+      //   });
+      // }
 
       // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
       if(!isFirstCompileAll) {
         setTimeout(function() {
-          __handlerReqortUtil.checkUpdateError(_isError, strFileName)
+          __handlerErrorUtil.checkClearError(_isError, strFileName);
+          __handlerErrorUtil.reportError();
+
           _isError = false;
-        });
-      }
-
-      if(filePathData) {
-        filePathData.forEach(function(strFilePath) {
-          modules.gulp.src(strFilePath)
-          .pipe(modules.plumber({
-            'errorHandler': function(err) {
-              _isError = true;
-              __handlerReqortUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
-            }
-          }))
-          .pipe(modules.print(
-            filepath => {
-              return modules.ansiColors.yellow(`compile js: ${filepath}`);
-            }
-          ))
-          .pipe(
-            modules.gulpBrowserify(
-            {
-              transform: modules.babelify.configure({
-                presets: ["@babel/env"],
-                plugins: [
-                  ['module-resolver', {
-                    "alias": {
-                      "~jsPath": './src/js',
-                      "~jsPartialPath": './src/js/partial',
-                    }
-                  }]
-                ]
-              }),
-            })
-          )
-          .pipe(modules.rename(function(path) {
-            strFileName = strFileName.replace('.js', '');
-
-            path.basename = strFileName;
-
-            // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
-            if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
-              ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
-                'file-name': path.basename,
-                'file-path': APP.tmp.js + '/' + path.basename,
-              });
-            }
-
-            if(!isFirstCompileAll) {
-              modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
-                if(err) throw err;
-
-                console.log('write file: "tmp-construct-log.json" finish.');
-              });
-            }
-          }))
-          .pipe(
-            modules.gulp.dest(APP.tmp.js)
-          );
         });
       }
     }))
@@ -582,7 +586,7 @@ const _convertNunjuckTmpTask = function() {
           .pipe(modules.plumber({
             'errorHandler': function(err) {
               _isError = true;
-              __handlerReqortUtil.handlerError(err, TYPE_FILE_NJK, isFirstCompileAll);
+              __handlerErrorUtil.handlerError(err, TYPE_FILE_NJK, isFirstCompileAll);
             }
           }))
           .pipe(modules.print(
@@ -617,7 +621,9 @@ const _convertNunjuckTmpTask = function() {
             // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
             if(!isFirstCompileAll) {
               setTimeout(function() {
-                __handlerReqortUtil.checkUpdateError(_isError, foldername + '.' + TYPE_FILE_NJK);
+                __handlerErrorUtil.checkClearError(_isError, foldername + '.' + TYPE_FILE_NJK);
+                __handlerErrorUtil.reportError();
+
                 _isError = false;
               });
             }
@@ -762,11 +768,9 @@ export const doAfterBuildTask = {
       });
 
       // NOTE Sau khi build xong lượt đầu thì forEach để in error ra nếu có
-      if(__handlerReqortUtil.arrError) {
+      if(__handlerErrorUtil.arrError) {
         setTimeout(function() {
-          _forIn(__handlerReqortUtil.arrError, function(strError) {
-            console.log(strError);
-          })
+          __handlerErrorUtil.reportError();
         }, 1000);
       }
 
