@@ -71,7 +71,9 @@ class HandlerErrorUtil {
           strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
         }
 
-        self.reportError(self._generateCustomError(err, strFilePath, extFileName));
+        setTimeout(function() {
+          self.reportError(self._generateCustomError(err, strFilePath, extFileName));
+        }, 100);
       }
     }
   }; // handlerError()

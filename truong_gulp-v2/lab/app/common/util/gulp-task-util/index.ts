@@ -365,7 +365,6 @@ const _compileJsTmpTask = function() {
     return modules.gulp.src(APP.src.js + '/**/*.js')
     .pipe(modules.plumber({
       'errorHandler': function(err) {
-        console.log(err);
         _isError = true;
         __handlerErrorUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
       }
@@ -398,66 +397,56 @@ const _compileJsTmpTask = function() {
           'file-name': filename,
           'content': file.contents,
         });
-
-
       }
 
-      strFileName = (foldername !== TYPE_FILE_JS ? foldername + '.' + TYPE_FILE_JS : filename);
+      if(filePathData) {
+        filePathData.forEach(function(strFilePath) {
+          modules.gulp.src(strFilePath)
+          .pipe(modules.print(
+            filepath => {
+              return modules.ansiColors.yellow(`compile js: ${filepath}`);
+            }
+          ))
+          .pipe(
+            modules.gulpBrowserify(
+            {
+              transform: modules.babelify.configure({
+                presets: ["@babel/env"],
+                plugins: [
+                  ['module-resolver', {
+                    "alias": {
+                      "~jsPath": './src/js',
+                      "~jsPartialPath": './src/js/partial',
+                    }
+                  }]
+                ]
+              }),
+            })
+          )
+          .pipe(modules.rename(function(path) {
+            path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
-      // if(filePathData) {
-      //   filePathData.forEach(function(strFilePath) {
-      //     modules.gulp.src(strFilePath)
-      //     .pipe(modules.plumber({
-      //       'errorHandler': function(err) {
-      //         _isError = true;
-      //         __handlerErrorUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
-      //       }
-      //     }))
-      //     .pipe(modules.print(
-      //       filepath => {
-      //         return modules.ansiColors.yellow(`compile js: ${filepath}`);
-      //       }
-      //     ))
-      //     .pipe(
-      //       modules.gulpBrowserify(
-      //       {
-      //         transform: modules.babelify.configure({
-      //           presets: ["@babel/env"],
-      //           plugins: [
-      //             ['module-resolver', {
-      //               "alias": {
-      //                 "~jsPath": './src/js',
-      //                 "~jsPartialPath": './src/js/partial',
-      //               }
-      //             }]
-      //           ]
-      //         }),
-      //       })
-      //     )
-      //     .pipe(modules.rename(function(path) {
-      //       path.basename = strFileName.replace('.js', '');
+            // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
+            if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
+              ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
+                'file-name': path.basename,
+                'file-path': APP.tmp.js + '/' + path.basename,
+              });
+            }
 
-      //       // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
-      //       if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
-      //         ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
-      //           'file-name': path.basename,
-      //           'file-path': APP.tmp.js + '/' + path.basename,
-      //         });
-      //       }
+            if(!isFirstCompileAll) {
+              modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+                if(err) throw err;
 
-      //       if(!isFirstCompileAll) {
-      //         modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
-      //           if(err) throw err;
-
-      //           console.log('write file: "tmp-construct-log.json" finish.');
-      //         });
-      //       }
-      //     }))
-      //     .pipe(
-      //       modules.gulp.dest(APP.tmp.js)
-      //     );
-      //   });
-      // }
+                console.log('write file: "tmp-construct-log.json" finish.');
+              });
+            }
+          }))
+          .pipe(
+            modules.gulp.dest(APP.tmp.js)
+          );
+        });
+      }
 
       // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
       if(!isFirstCompileAll) {
@@ -771,7 +760,7 @@ export const doAfterBuildTask = {
       if(__handlerErrorUtil.arrError) {
         setTimeout(function() {
           __handlerErrorUtil.reportError();
-        }, 1000);
+        }, 1500);
       }
 
       cb();
