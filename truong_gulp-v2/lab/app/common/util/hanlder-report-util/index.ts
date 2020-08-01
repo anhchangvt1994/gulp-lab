@@ -1,17 +1,22 @@
 import { isEmpty as _isEmpty, forIn as _forIn } from 'lodash';
-import { ARR_FILE_NAME } from '@common/define/file-define';
+import { ARR_FILE_EXTENSION, ARR_FILE_EXTENSION_FULL_NAME } from '@common/define/file-define';
 import {
   highlight as _highlight,
   textColorRed as _textColorRed,
   textColorYellow as _textColorYellow,
+  textColorGreen as _textColorGreen
 } from '@common/define/highlight-define';
 
 interface ArrErrorConstruct {
-  [key:string]: string,
+  [key:string] : string | {[key:string] : string} | any,
 };
 
 class HandlerErrorUtil {
-  arrError: ArrErrorConstruct = {};
+  arrError: ArrErrorConstruct = {
+    [ARR_FILE_EXTENSION.CSS] : '',
+    [ARR_FILE_EXTENSION.NJK] : {},
+    [ARR_FILE_EXTENSION.JS] : {},
+  };
 
   constructor() {}
 
@@ -53,7 +58,6 @@ class HandlerErrorUtil {
     else {
       if(!_isEmpty(err)) {
         let strFilePath = null;
-        let strFileName = null;
 
         if(err.file) {
           strFilePath = err.file;
@@ -62,14 +66,6 @@ class HandlerErrorUtil {
         }
 
         strFilePath = strFilePath.replace(/\\/g,'/');
-        strFileName = strFilePath.split('/').slice(-2)[1];
-
-        if(
-          strFileName === 'index.js' ||
-          strFileName === 'index.njk'
-        ) {
-          strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
-        }
 
         setTimeout(function() {
           self.reportError(self._generateCustomError(err, strFilePath, extFileName));
@@ -82,7 +78,8 @@ class HandlerErrorUtil {
   // NOTE - Dùng check file hiện tại còn error hay không? Nếu không còn thì set về null
   checkClearError(
     isError: boolean,
-    fileName: string
+    extFileName: string,
+    strErrKey?: string
   ) {
     const self = this;
 
@@ -94,7 +91,11 @@ class HandlerErrorUtil {
       return;
     }
 
-    self.arrError[fileName] = null;
+    if(strErrKey) {
+      delete self.arrError[extFileName][strErrKey];
+    } else {
+      self.arrError[extFileName] = null;
+    }
   } // checkClearError()
 
   //! ANCHOR - reportError
@@ -105,25 +106,86 @@ class HandlerErrorUtil {
     if(customError) {
       console.log(customError);
       return;
-    } else if(!_isEmpty(self.arrError)){
-      _forIn(self.arrError, function(err) {
-        if(err) {
-          console.log(err);
+    } else if(!_isEmpty(self.arrError)) {
+      const _strCssError = self.arrError[ARR_FILE_EXTENSION.CSS];
+      const _arrNjkErrorItemList = self.arrError[ARR_FILE_EXTENSION.NJK];
+      const _arrJsErrorItemList = self.arrError[ARR_FILE_EXTENSION.JS];
+
+      if(!_isEmpty(_strCssError)) {
+        console.log(_strCssError);
+      }
+
+      if(!_isEmpty(_arrNjkErrorItemList)) {
+        for (const strErrKey in _arrNjkErrorItemList) {
+          if(_arrNjkErrorItemList[strErrKey]) {
+            console.log(_arrNjkErrorItemList[strErrKey]);
+            break;
+          }
         }
-      })
+      }
+
+      if(!_isEmpty(_arrJsErrorItemList)) {
+        for(const strErrKey in _arrJsErrorItemList) {
+          if(_arrJsErrorItemList[strErrKey]) {
+            console.log(_arrJsErrorItemList[strErrKey]);
+            break;
+          }
+        }
+      }
     }
   } // reportError()
+
+  //! ANCHOR - notiSuccess
+  // NOTE - Kiểm tra và hiển thị thông báo success fix issue / error đối với các file
+  notifSuccess() {
+    const self = this;
+    let _isHasSuccess = false;
+
+    if(_isEmpty(self.arrError[ARR_FILE_EXTENSION.CSS])) {
+      let notify = '';
+      notify = ARR_FILE_EXTENSION_FULL_NAME[ARR_FILE_EXTENSION.CSS] + '  : ';
+      notify += _textColorGreen('procress is success!');
+
+      console.log(notify);
+
+      _isHasSuccess = true;
+    }
+
+    if(_isEmpty(self.arrError[ARR_FILE_EXTENSION.NJK])) {
+      let notify = '';
+      notify = ARR_FILE_EXTENSION_FULL_NAME[ARR_FILE_EXTENSION.NJK] + ' : ';
+      notify += _textColorGreen('procress is success!');
+
+      console.log(notify);
+
+      _isHasSuccess = true;
+    }
+
+    if(_isEmpty(self.arrError[ARR_FILE_EXTENSION.JS])) {
+      let notify = '';
+      notify = ARR_FILE_EXTENSION_FULL_NAME[ARR_FILE_EXTENSION.JS] + ' : ';
+      notify += _textColorGreen('procress is success!');
+
+      console.log(notify);
+
+      _isHasSuccess = true;
+    }
+
+    if(_isHasSuccess) {
+      console.log('\n');
+    }
+  } // notifSuccess
 
   //! ANCHOR - _addErrorList
   private _addErrorList(
     err: any,
-    extFileName: string,
+    extFileName: string
   ) {
     const self = this;
 
     if(!_isEmpty(err)) {
+      let strErrKey = null; // NOTE - strErrKey có thể là extension của file đó hoặc file name
       let strFilePath = null;
-      let strFileName = null;
 
       if(err.file) {
         strFilePath = err.file;
@@ -132,16 +194,21 @@ class HandlerErrorUtil {
       }
 
       strFilePath = strFilePath.replace(/\\/g,'/');
-      strFileName = strFilePath.split('/').slice(-2)[1];
 
-      if(
-        strFileName === 'index.js' ||
-        strFileName === 'index.njk'
-      ) {
-        strFileName = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
+      if(extFileName === ARR_FILE_EXTENSION.CSS) {
+        self.arrError[extFileName] = self._generateCustomError(err, strFilePath, extFileName);
+      } else {
+        strErrKey = strFilePath.split('/').slice(-2)[1];
+
+        if(
+          strErrKey === 'index.js' ||
+          strErrKey === 'index.njk'
+        ) {
+          strErrKey = strFilePath.split('/').slice(-2)[0] + '.' + extFileName;
+        }
+
+        self.arrError[extFileName][strErrKey] = self._generateCustomError(err, strFilePath, extFileName);
       }
-
-      self.arrError[strFileName] = self._generateCustomError(err, strFilePath, extFileName);
     }
   } // _addErrorList()
 
@@ -151,11 +218,9 @@ class HandlerErrorUtil {
     strFilePath: string,
     extFileName: string
   ) : string {
-    const self = this;
-
     let intLineNumber = null;
 
-    let report = '\n\n---------------- ' + ARR_FILE_NAME[extFileName] + ' ----------------\n\n';
+    let report = '\n\n---------------- ' + ARR_FILE_EXTENSION_FULL_NAME[extFileName] + ' ----------------\n\n';
 
     report += _highlight('TASK:') + _textColorRed(' [' + err.plugin + ']') + '\n';
     report += _highlight('PROB:') + ' ' + _textColorRed(err.message) + '\n';

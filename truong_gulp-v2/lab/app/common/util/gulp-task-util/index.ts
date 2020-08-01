@@ -15,10 +15,10 @@ import { forIn as _forIn } from 'lodash';
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
-const TYPE_FILE_JS = ARR_FILE_EXTENSION.js;
-const TYPE_FILE_CSS = ARR_FILE_EXTENSION.css;
-const TYPE_FILE_HTML = ARR_FILE_EXTENSION.html;
-const TYPE_FILE_NJK = ARR_FILE_EXTENSION.njk;
+const TYPE_FILE_JS = ARR_FILE_EXTENSION.JS;
+const TYPE_FILE_CSS = ARR_FILE_EXTENSION.CSS;
+const TYPE_FILE_HTML = ARR_FILE_EXTENSION.HTML;
+const TYPE_FILE_NJK = ARR_FILE_EXTENSION.NJK;
 
 /* -------------------------------------------------------------------------- */
 
@@ -27,14 +27,6 @@ const TYPE_FILE_NJK = ARR_FILE_EXTENSION.njk;
 const generateRandomNumber = new GenerateRandom();
 
 let isFirstCompileAll = true;
-
-let _arrReadTmpDirConstructFile = require(APP.src.data + '/tmp-construct-log.json');
-
-if(_arrReadTmpDirConstructFile) {
-  ARR_TMP_CONSTRUCT[TYPE_FILE_CSS] = _arrReadTmpDirConstructFile[TYPE_FILE_CSS];
-  ARR_TMP_CONSTRUCT[TYPE_FILE_JS] = _arrReadTmpDirConstructFile[TYPE_FILE_JS];
-  ARR_TMP_CONSTRUCT[TYPE_FILE_HTML] = _arrReadTmpDirConstructFile[TYPE_FILE_HTML];
-}
 /* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
@@ -74,43 +66,28 @@ const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
 };
 
 //! ANCHOR - update sass cache version
-const __updateSassCacheVersion = function() {
+const __setEnvCacheVersion = function() {
+  // NOTE - Init tạo cache version cho sass
   modules.gulp.src(APP.src.scss + '/var/_root-env.scss')
-  .pipe(modules.rename({
-    basename: '_env',
-  }))
-  .pipe(modules.sassVars({
-    '$var-cache-version': generateRandomNumber.version,
+  .pipe(modules.rename(function(path) {
+    path.basename = '_env';
   }))
   .pipe(modules.gulp.dest(APP.src.scss + '/var/'));
 };
 
-const __updateNjkVersion = function() {
+const __initCacheVersion = function() {
+  console.log(modules.ansiColors.blueBright(`update new Sass cache version: ${generateRandomNumber.version}`));
   console.log(modules.ansiColors.blueBright(`update new Nunjucks cache version: ${generateRandomNumber.version}`));
 };
 
-const __reportError = function (error) {
-    modules.notify({
-        title: 'Task Failed [' + error.plugin + ']',
-        message: "line " + error.line + " in " + error.file.replace(/^.*[\\\/]/, '') + "\n" + error.message,
-        wait: true,
-        sound: false,
-    }).write(error);
-
-    // Prevent the 'watch' task from stopping
-    this.emit('end');
-}
-
 /* ------------------------------- INIT METHOD ------------------------------ */
-// NOTE First generate new cache version for sass
-__updateSassCacheVersion();
+__setEnvCacheVersion();
 
-// NOTE Update new sass's cache version after each 10 minutes
+// NOTE Update new cache versioh mỗi 10 phút
 setInterval(function() {
   generateRandomNumber.updateVersion();
 
-  __updateSassCacheVersion();
-  __updateNjkVersion();
+  __initCacheVersion();
 }, 600000);
 
 //! ANCHOR - handler report error
@@ -247,13 +224,10 @@ export const copyFontsTask = {
 //-- convert sass to css into tmp
 const _convertSassTmpTask = function() {
   modules.gulp.task('sassTmp', function() {
+    let _isError = false;
+
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
-    .pipe(modules.plumber({
-      'errorHandler': function(err) {
-        __handlerErrorUtil.handlerError(err, TYPE_FILE_CSS, isFirstCompileAll);
-      }
-    }))
-    .pipe(modules.cached())
+    .pipe(modules.cached('scss'))
     .pipe(modules.dependents())
     .pipe(modules.print(
       (filepath) => {
@@ -264,7 +238,24 @@ const _convertSassTmpTask = function() {
         return modules.ansiColors.yellow(`compile sass: ${filepath}`);
       }
     ))
-    .pipe(modules.sass())
+    .pipe(modules.sassVars({
+      '$var-cache-version': generateRandomNumber.version,
+    }))
+    .pipe(modules.sass.sync(
+      {
+        errLogToConsole: false,
+      }
+    ))
+    .on('error', function(err) {
+      _isError = true;
+      __handlerErrorUtil.handlerError(err, TYPE_FILE_CSS, isFirstCompileAll);
+
+      if(!isFirstCompileAll) {
+        __handlerErrorUtil.reportError();
+      }
+
+      this.emit('end');
+    })
     .pipe(modules.rename(function(path) {
       // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
       path.dirname = '';
@@ -278,6 +269,13 @@ const _convertSassTmpTask = function() {
       }
 
       if(!isFirstCompileAll) {
+        // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
+        __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_CSS);
+        __handlerErrorUtil.reportError();
+        __handlerErrorUtil.notifSuccess();
+
+        _isError = false;
+
         modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
           if(err) throw err;
 
@@ -362,21 +360,31 @@ const _compileJsTmpTask = function() {
   modules.gulp.task('jsTmp', function() {
     let _isError = false;
 
+    let _arrJsErrorFileList = [];
+
     return modules.gulp.src(APP.src.js + '/**/*.js')
     .pipe(modules.plumber({
       'errorHandler': function(err) {
-        _isError = true;
-        __handlerErrorUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
-      }
+        _arrJsErrorFileList.push(err.fileName);
+      },
     }))
     .pipe(modules.cached('.js'))
     .pipe(modules.eslint())
     .pipe(modules.eslint.failOnError())
+    .on('error', function(err) {
+      _isError = true;
+      __handlerErrorUtil.handlerError(err, TYPE_FILE_JS, isFirstCompileAll);
+
+      if(!isFirstCompileAll) {
+        __handlerErrorUtil.reportError();
+      }
+
+      this.emit('end');
+    })
     .pipe(modules.tap(function(file) {
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
       const filename = file.path.split('\\').slice(-2)[1];
       const foldername = file.path.split('\\').slice(-2)[0];
-      let strFileName = null;
 
       let filePathData = null;
 
@@ -397,6 +405,17 @@ const _compileJsTmpTask = function() {
           'file-name': filename,
           'content': file.contents,
         });
+      }
+
+      const strErrKey = (filename === 'index.js' ? foldername + '.js' : filename);
+
+      if(!isFirstCompileAll) {
+        // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
+        __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_JS, strErrKey);
+        __handlerErrorUtil.reportError();
+        __handlerErrorUtil.notifSuccess();
+
+        _isError = false;
       }
 
       if(filePathData) {
@@ -423,6 +442,9 @@ const _compileJsTmpTask = function() {
               }),
             })
           )
+          .on('error', function(err) {
+            this.emit('end');
+          })
           .pipe(modules.rename(function(path) {
             path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
@@ -447,19 +469,12 @@ const _compileJsTmpTask = function() {
           );
         });
       }
-
-      // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
-      if(!isFirstCompileAll) {
-        setTimeout(function() {
-          __handlerErrorUtil.checkClearError(_isError, strFileName);
-          __handlerErrorUtil.reportError();
-
-          _isError = false;
-        });
-      }
     }))
   });
+};
 
+//-- end compile js tmp
+const _endCompileJsTmpTask = function() {
   // NOTE xử lý phụ sau khi js compile finish
   modules.gulp.task('jsEndTmp', function(cb) {
     // NOTE Đánh dấu lượt compile đầu tiên đã hoàn thành
@@ -523,6 +538,7 @@ export const compileJsTask = {
   },
   'endTmp': {
     'name': 'jsEndTmp',
+    'init': _endCompileJsTmpTask,
   },
   'dist': {
     'name': 'jsDist',
@@ -572,12 +588,6 @@ const _convertNunjuckTmpTask = function() {
           const foldername = indexPath.split('\\').slice(-2)[0];
 
           modules.gulp.src(indexPath)
-          .pipe(modules.plumber({
-            'errorHandler': function(err) {
-              _isError = true;
-              __handlerErrorUtil.handlerError(err, TYPE_FILE_NJK, isFirstCompileAll);
-            }
-          }))
           .pipe(modules.print(
             filepath => {
               return modules.ansiColors.yellow(`convert njk: ${filepath}`);
@@ -604,17 +614,28 @@ const _convertNunjuckTmpTask = function() {
               intRandomNumber : Math.random() * 10
             }
           }))
+          .on('error', function(err) {
+            _isError = true;
+            __handlerErrorUtil.handlerError(err, TYPE_FILE_NJK, isFirstCompileAll);
+
+            if(!isFirstCompileAll) {
+              __handlerErrorUtil.reportError();
+            }
+
+            this.emit('end');
+          })
           .pipe(modules.rename(function(path) {
             path.basename = foldername;
 
             // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
             if(!isFirstCompileAll) {
-              setTimeout(function() {
-                __handlerErrorUtil.checkClearError(_isError, foldername + '.' + TYPE_FILE_NJK);
-                __handlerErrorUtil.reportError();
+              const strErrKey = path.basename + '.' + TYPE_FILE_NJK;
+              // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
+              __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_NJK, strErrKey);
+              __handlerErrorUtil.reportError();
+              __handlerErrorUtil.notifSuccess();
 
-                _isError = false;
-              });
+              _isError = false;
             }
 
             // NOTE Nếu construct HTML đối với path file name hiện tại đang rỗng thì nạp vào
@@ -760,6 +781,7 @@ export const doAfterBuildTask = {
       if(__handlerErrorUtil.arrError) {
         setTimeout(function() {
           __handlerErrorUtil.reportError();
+          __handlerErrorUtil.notifSuccess();
         }, 1500);
       }
 

@@ -26,6 +26,9 @@ prettierCssTmpTask.init();
 //-- compile js into tmp
 compileJsTask.tmp.init();
 
+//-- end compile js tmp
+compileJsTask.endTmp.init();
+
 //-- compile js into dist
 compileJsTask.dist.init();
 

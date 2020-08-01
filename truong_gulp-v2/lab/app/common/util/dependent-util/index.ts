@@ -32,6 +32,8 @@ interface ArrFileInfoConstruct {
   'path'?: string,
   'file-name': string,
   'content'?: any,
+  'is-scan-error'?: boolean,
+  'is-error'?: boolean,
 }
 
 const ARR_EXTENSION_FILE: arrExtensionFileConstruct = {
@@ -59,6 +61,7 @@ class Dependents {
   private _arrFooterExceptionMainFiles: Array<string>; // NOTE chứa những index file ngoại lệ không cần built lại khi thay đổi footer của layout trong nunjucks
   private _arrDependentFiles: ArrDependentFileConstruct = {};
   private _regexExecFileContent: RegExp;
+
   isFirstCompile: boolean = true;
 
   constructor(strFileExtension: string) {
