@@ -17,11 +17,14 @@ interface PathListItemDataConstruct {
 };
 
 interface ResourceConstruct {
+  'project': string,
   'path': PathListItemDataConstruct,
   'resource': ResourceItemConstruct,
 };
 
 const RESOURCE: ResourceConstruct = {
+  'project': 'opialacreme',
+
   'path': {
     'src': APP.src.path,
     'njk': APP.src.njk,

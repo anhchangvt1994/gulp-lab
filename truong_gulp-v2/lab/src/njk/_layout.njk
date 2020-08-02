@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ objResource.projectTitle + '-' + pageHeadTitle }}</title>
+    <title>{{ objGlobal['project'] + '/' + pageHeadTitle }}</title>
 
     <!-- global css file (common.css) -->
     {% for cssFile in objResource['common']['arrCssFile'] %}
@@ -14,7 +14,7 @@
     {% endfor %}
 
     <!-- page css file -->
-    {% for cssFile in objResource %}
+    {% for cssFile in objResource[namepage]['arrCssFile'] %}
       <link rel="stylesheet" href="{{ LAYOUT_CONFIG.cssUrl + cssFile + '.css' + '?v=' + CACHE_VERSION }}">
     {% endfor %}
 

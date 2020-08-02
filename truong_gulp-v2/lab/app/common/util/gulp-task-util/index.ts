@@ -601,9 +601,9 @@ const _convertNunjuckTmpTask = function() {
               CACHE_VERSION: generateRandomNumber.version,
               EVN_APPLICATION: EVN_APPLICATION.dev,
               LAYOUT_CONFIG: {
-                'imageUrl' : APP.tmp.images,
-                'cssUrl' : APP.tmp.css,
-                'jsUrl' : APP.tmp.js,
+                'imageUrl' : APP.tmp.images + '/',
+                'cssUrl' : APP.tmp.css + '/',
+                'jsUrl' : APP.tmp.js + '/',
               }
             }
           )))
