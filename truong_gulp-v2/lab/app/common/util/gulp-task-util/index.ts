@@ -66,14 +66,14 @@ const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
 };
 
 //! ANCHOR - update sass cache version
-const __setEnvCacheVersion = function() {
-  // NOTE - Init tạo cache version cho sass
-  modules.gulp.src(APP.src.scss + '/var/_root-env.scss')
-  .pipe(modules.rename(function(path) {
-    path.basename = '_env';
-  }))
-  .pipe(modules.gulp.dest(APP.src.scss + '/var/'));
-};
+// const __setEnvCacheVersion = function() {
+//   // NOTE - Init tạo cache version cho sass
+//   modules.gulp.src(APP.src.scss + '/var/_root-env.scss')
+//   .pipe(modules.rename(function(path) {
+//     path.basename = '_env';
+//   }))
+//   .pipe(modules.gulp.dest(APP.src.scss + '/var/'));
+// };
 
 const __initCacheVersion = function() {
   console.log(modules.ansiColors.blueBright(`update new Sass cache version: ${generateRandomNumber.version}`));
@@ -81,7 +81,7 @@ const __initCacheVersion = function() {
 };
 
 /* ------------------------------- INIT METHOD ------------------------------ */
-__setEnvCacheVersion();
+// __setEnvCacheVersion();
 
 // NOTE Update new cache versioh mỗi 10 phút
 setInterval(function() {
@@ -382,9 +382,10 @@ const _compileJsTmpTask = function() {
       this.emit('end');
     })
     .pipe(modules.tap(function(file) {
+      const filePath = file.path.replace(/\\/g, '/');
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
-      const filename = file.path.split('\\').slice(-2)[1];
-      const foldername = file.path.split('\\').slice(-2)[0];
+      const filename = filePath.split('/').slice(-2)[1];
+      const foldername = filePath.split('/').slice(-2)[0];
 
       let filePathData = null;
 
@@ -501,9 +502,10 @@ const _compileJsDistTask = function() {
       return modules.gulp.src(APP.src.js + '/**/*.js')
       .pipe(modules.tap(function(file) {
 
+        const filePath = file.path.replace(/\\/g, '/');
         // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
-        const filename = file.path.split('\\').slice(-2)[1];
-        const foldername = file.path.split('\\').slice(-2)[0];
+        const filename = filePath.split('/').slice(-2)[1];
+        const foldername = filePath.split('/').slice(-2)[0];
 
         if(
           filename === 'index.js' ||
@@ -558,9 +560,11 @@ const _convertNunjuckTmpTask = function() {
     return modules.gulp.src(APP.src.njk + '/**/*.njk')
     .pipe(modules.cached('.njk'))
     .pipe(modules.tap(function(file) {
+      const filePath = file.path.replace(/\\/g, '/');
+
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
-      const filename = file.path.split('\\').slice(-2)[1];
-      const foldername = file.path.split('\\').slice(-2)[0];
+      const filename = filePath.split('/').slice(-2)[1];
+      const foldername = filePath.split('/').slice(-2)[0];
 
       let filePathData = null;
 
@@ -585,7 +589,8 @@ const _convertNunjuckTmpTask = function() {
         filePathData.length > 0
       ) {
         filePathData.forEach(function(indexPath) {
-          const foldername = indexPath.split('\\').slice(-2)[0];
+          indexPath = indexPath.replace(/\\/g, '/');
+          const foldername = indexPath.split('/').slice(-2)[0];
 
           modules.gulp.src(indexPath)
           .pipe(modules.print(
@@ -593,20 +598,22 @@ const _convertNunjuckTmpTask = function() {
               return modules.ansiColors.yellow(`convert njk: ${filepath}`);
             }
           ))
-          .pipe(modules.data((file) => (
-            {
-              file: file.path.split('\\')[file.path.split('\\').length - 2],
-              namepage: file.path.split('\\')[file.path.split('\\').length - 2],
+          .pipe(modules.data((file) => {
+            const filePath = file.path.replace(/\\/g, '/');
+
+            return {
+              file: filePath.split('/')[filePath.split('/').length - 2],
+              namepage: filePath.split('/')[filePath.split('/').length - 2],
               data: DATA,
               CACHE_VERSION: generateRandomNumber.version,
               EVN_APPLICATION: EVN_APPLICATION.dev,
               LAYOUT_CONFIG: {
-                'imageUrl' : APP.tmp.images + '/',
+                'imageUrl' : APP.tmp.images,
                 'cssUrl' : APP.tmp.css + '/',
                 'jsUrl' : APP.tmp.js + '/',
               }
             }
-          )))
+          }))
           .pipe(modules.nunjucksRender({
             ext: '.html',
             data: {
@@ -676,9 +683,11 @@ const _convertNunjuckDistTask = function() {
   modules.gulp.task('njkDist', function() {
     return modules.gulp.src(APP.src.njk + '/**/*.njk')
     .pipe(modules.tap(function(file) {
+      const filePath = file.path.replace(/\\/g, '/');
+
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
-      const filename = file.path.split('\\').slice(-2)[1];
-      const foldername = file.path.split('\\').slice(-2)[0];
+      const filename = filePath.split('/').slice(-2)[1];
+      const foldername = filePath.split('/').slice(-2)[0];
 
       if(filename === 'index.njk') {
         modules.gulp.src(file.path)

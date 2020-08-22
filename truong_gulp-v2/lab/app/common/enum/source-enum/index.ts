@@ -1,11 +1,12 @@
-const _LAB_PATH = __dirname.split('\\app')[0].replace(/\\/g, '/');
+const _DIR_PATH = __dirname.replace(/\\/g, '/');
+const _LAB_PATH = _DIR_PATH.split('/app')[0];
 
 const _APP_SRC_PATH: string = _LAB_PATH + '/src/'; // url của source directory (nơi để dev)
 
 const _APP_TMP_PATH: string = _LAB_PATH + '/tmp/'; // url của temp directory (nơi để built source deploy)
 
 const _APP_DIST_PATH: string = _LAB_PATH + '/dist/'; // url của dist directory (nơi chứa source production live)
-
+console.log(_APP_SRC_PATH);
 interface AppItemConstruct {
   path: string,
   scss?: string,
