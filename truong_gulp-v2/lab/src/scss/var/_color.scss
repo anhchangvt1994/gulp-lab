@@ -1,57 +1,57 @@
 //========================================================
 // Định nghĩa màu
 //========================================================
-$var-main-color: #0d1019;
-$var-main-color-root: $var-main-color;
-$var-main-color-light: lighten($var-main-color, 70%);
-$var-main-color-lighter: lighten($var-main-color, 80%);
-$var-main-color-lightest: lighten($var-main-color, 83%);
-$var-main-color-dark: lighten($var-main-color, 26%);
-$var-main-color-darker: lighten($var-main-color, 10%);
+$mz-main-color: #0d1019;
+$mz-main-color-root: $mz-main-color;
+$mz-main-color-light: lighten($mz-main-color, 70%);
+$mz-main-color-lighter: lighten($mz-main-color, 80%);
+$mz-main-color-lightest: lighten($mz-main-color, 83%);
+$mz-main-color-dark: lighten($mz-main-color, 26%);
+$mz-main-color-darker: lighten($mz-main-color, 10%);
 
-$var-orange: #ffa500;
-$var-orange-root: $var-orange;
-$var-orange-light: lighten($var-orange, 10%);
-$var-orange-lighter: lighten($var-orange, 35%);
-$var-orange-lightest: lighten($var-orange, 45%);
-$var-orange-dark: darken($var-orange, 10%);
-$var-orange-darker: darken($var-orange, 18%);
-$var-orange-overlay: blend-hardlight($var-orange,lighten($var-main-color, 70%));
+$mz-orange: #ffa500;
+$mz-orange-root: $mz-orange;
+$mz-orange-light: lighten($mz-orange, 10%);
+$mz-orange-lighter: lighten($mz-orange, 35%);
+$mz-orange-lightest: lighten($mz-orange, 45%);
+$mz-orange-dark: darken($mz-orange, 10%);
+$mz-orange-darker: darken($mz-orange, 18%);
+$mz-orange-overlay: blend-hardlight($mz-orange,lighten($mz-main-color, 70%));
 
-$var-yellow: #f2d537;
+$mz-yellow: #f2d537;
 
-$var-yellow-root: $var-yellow;
-$var-yellow-light: lighten($var-yellow, 10%);
-$var-yellow-lighter: lighten($var-yellow, 35%);
-$var-yellow-lightest: lighten($var-yellow, 45%);
-$var-yellow-dark: darken($var-yellow, 10%);
-$var-yellow-darker: darken($var-yellow, 18%);
-$var-yellow-overlay: blend-hardlight($var-yellow,lighten($var-main-color, 70%));
+$mz-yellow-root: $mz-yellow;
+$mz-yellow-light: lighten($mz-yellow, 10%);
+$mz-yellow-lighter: lighten($mz-yellow, 35%);
+$mz-yellow-lightest: lighten($mz-yellow, 45%);
+$mz-yellow-dark: darken($mz-yellow, 10%);
+$mz-yellow-darker: darken($mz-yellow, 18%);
+$mz-yellow-overlay: blend-hardlight($mz-yellow,lighten($mz-main-color, 70%));
 
 $map-palette-color-with-level: (
   'main': (
-    'lightest': $var-main-color-lightest,
-    'lighter': $var-main-color-lighter,
-    'light': $var-main-color-light,
-    'root': $var-main-color-root,
-    'dark': $var-main-color-dark,
-    'darker': $var-main-color-darker,
+    'lightest': $mz-main-color-lightest,
+    'lighter': $mz-main-color-lighter,
+    'light': $mz-main-color-light,
+    'root': $mz-main-color-root,
+    'dark': $mz-main-color-dark,
+    'darker': $mz-main-color-darker,
   ),
   'orange': (
-    'lightest': $var-orange-lightest,
-    'lighter': $var-orange-lighter,
-    'light': $var-orange-light,
-    'root': $var-orange-root,
-    'dark': $var-orange-dark,
-    'darker': $var-orange-darker,
+    'lightest': $mz-orange-lightest,
+    'lighter': $mz-orange-lighter,
+    'light': $mz-orange-light,
+    'root': $mz-orange-root,
+    'dark': $mz-orange-dark,
+    'darker': $mz-orange-darker,
   ),
   'yellow': (
-    'lightest': $var-yellow-light,
-    'lighter': $var-yellow-lighter,
-    'light': $var-yellow-light,
-    'root': $var-yellow-root,
-    'dark': $var-yellow-dark,
-    'darker': $var-yellow-darker,
+    'lightest': $mz-yellow-light,
+    'lighter': $mz-yellow-lighter,
+    'light': $mz-yellow-light,
+    'root': $mz-yellow-root,
+    'dark': $mz-yellow-dark,
+    'darker': $mz-yellow-darker,
   ),
 );
 
@@ -76,9 +76,9 @@ $map-color-level-key: (
   2: 'darker',
 );
 
-$var-max-color-level-index: 2;
+$mz-max-color-level-index: 2;
 
 $map-color-overlay: (
-  'orange': $var-orange-overlay,
-  'yellow': $var-yellow-overlay,
+  'orange': $mz-orange-overlay,
+  'yellow': $mz-yellow-overlay,
 );

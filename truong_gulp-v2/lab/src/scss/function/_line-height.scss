@@ -1,10 +1,10 @@
 @function get-line-height-from-font-size($_size: 'default') {
   $_font-size: 0;
 
-  @if(map-has-key($var-map-font-size, $_size)) {
-    $_font-size: map-get($var-map-font-size, $_size);
-  } @else if (map-has-key($var-map-heading-font-size, $_size)) {
-    $_font-size: map-get($var-map-heading-font-size, $_size);
+  @if(map-has-key($mz-map-font-size, $_size)) {
+    $_font-size: map-get($mz-map-font-size, $_size);
+  } @else if (map-has-key($mz-map-heading-font-size, $_size)) {
+    $_font-size: map-get($mz-map-heading-font-size, $_size);
   } @else if (is-absolute-length($_size)) {
     $_font-size: $_size;
   } @else {

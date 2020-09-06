@@ -6,5 +6,5 @@
     @error 'param of get-space-from-base must be a number!';
   }
 
-  @return $var-base-space * $_int-scale;
+  @return $mz-base-space * $_int-scale;
 }

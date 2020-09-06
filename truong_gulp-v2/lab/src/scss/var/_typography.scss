@@ -1,38 +1,38 @@
 //==============================================================
 // Font size / line height for text
 //==============================================================
-$var-font-size-xs: 12px;
-$var-font-size-sm: 13px;
-$var-font-size-normal: 14px;
-$var-font-size-md: 16px;
-$var-font-size-lg: 18px;
-$var-font-size-default: $var-font-size-normal;
-$var-font-size-key-default: 'default';
+$mz-font-size-xs: 12px;
+$mz-font-size-sm: 13px;
+$mz-font-size-normal: 14px;
+$mz-font-size-md: 16px;
+$mz-font-size-lg: 18px;
+$mz-font-size-default: $mz-font-size-normal;
+$mz-font-size-key-default: 'default';
 
-$var-map-font-size: (
-  'xs': $var-font-size-xs,
-  'sm': $var-font-size-sm,
-  'normal': $var-font-size-normal,
-  'md': $var-font-size-md,
-  'lg': $var-font-size-lg,
-  'default': $var-font-size-default,
+$mz-map-font-size: (
+  'xs': $mz-font-size-xs,
+  'sm': $mz-font-size-sm,
+  'normal': $mz-font-size-normal,
+  'md': $mz-font-size-md,
+  'lg': $mz-font-size-lg,
+  'default': $mz-font-size-default,
 );
 
 //==============================================================
 // Font size / line height for heading
 //==============================================================
-$var-h1-font-size: 32px;
-$var-h2-font-size: 28px;
-$var-h3-font-size: 24px;
-$var-h4-font-size: 20px;
-$var-h5-font-size: 18px;
-$var-h6-font-size: 16px;
+$mz-h1-font-size: 32px;
+$mz-h2-font-size: 28px;
+$mz-h3-font-size: 24px;
+$mz-h4-font-size: 20px;
+$mz-h5-font-size: 18px;
+$mz-h6-font-size: 16px;
 
-$var-map-heading-font-size: (
-  'h1': $var-h1-font-size,
-  'h2': $var-h2-font-size,
-  'h3': $var-h3-font-size,
-  'h4': $var-h4-font-size,
-  'h5': $var-h5-font-size,
-  'h6': $var-h6-font-size,
+$mz-map-heading-font-size: (
+  'h1': $mz-h1-font-size,
+  'h2': $mz-h2-font-size,
+  'h3': $mz-h3-font-size,
+  'h4': $mz-h4-font-size,
+  'h5': $mz-h5-font-size,
+  'h6': $mz-h6-font-size,
 );
