@@ -18,12 +18,20 @@ interface PathListItemDataConstruct {
 
 interface ResourceConstruct {
   'project': string,
+  'port': string, // NOTE - Lưu ý những thông tin này cần được config trong file host trước
+  'ip_address': string, // NOTE - Lưu ý những thông tin này cần được config trong file host trước
+  'host': string, // NOTE - Lưu ý những thông tin này cần được config trong file host trước
+  'local': string,
   'path': PathListItemDataConstruct,
   'resource': ResourceItemConstruct,
 };
 
 const RESOURCE: ResourceConstruct = {
-  'project': 'opialacreme',
+  'project': 'gulp',
+  'port': '80',
+  'ip_address': '192.168.100.8',
+  'host': 'gulp-dev.vn',
+  'local': 'localhost',
 
   'path': {
     'src': APP.src.path,

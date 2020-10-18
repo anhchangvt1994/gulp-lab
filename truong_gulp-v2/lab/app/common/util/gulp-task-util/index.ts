@@ -27,6 +27,18 @@ const TYPE_FILE_NJK = ARR_FILE_EXTENSION.NJK;
 const generateRandomNumber = new GenerateRandom();
 
 let isFirstCompileAll = true;
+
+// NOTE - Định nghĩa project host
+let strProjectHostUrl = null;
+let strProjectStaticUrl = null;
+
+if(process.env.NODE_ENV === 'dev') {
+  strProjectHostUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
+  strProjectStaticUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
+} else if (process.env.NODE_ENV === 'production') {
+  strProjectHostUrl = 'http://' + RESOURCE.host + ':' + RESOURCE.port;
+  strProjectStaticUrl = 'http://static.' + RESOURCE.host + ':' + RESOURCE.port;
+}
 /* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
@@ -608,9 +620,9 @@ const _convertNunjuckTmpTask = function() {
               CACHE_VERSION: generateRandomNumber.version,
               EVN_APPLICATION: EVN_APPLICATION.dev,
               LAYOUT_CONFIG: {
-                'imageUrl' : APP.tmp.images,
-                'cssUrl' : APP.tmp.css + '/',
-                'jsUrl' : APP.tmp.js + '/',
+                'imageUrl' : strProjectStaticUrl + '/image', // NOTE - Vì image sử dụng trong layout config cho những file render numjuck sang html thường có dạng '{{ LAYOUT_CONFIG.imageUrl }}/fantasy-image08.jpg' nên để dev tự thêm / sẽ clear hơn khi sử dụng với nunjuck
+                'cssUrl' : strProjectStaticUrl + '/css/',
+                'jsUrl' : strProjectStaticUrl + '/js/',
               }
             }
           }))
@@ -691,27 +703,32 @@ const _convertNunjuckDistTask = function() {
 
       if(filename === 'index.njk') {
         modules.gulp.src(file.path)
-        .pipe(modules.data((file) => (
-          {
-            namepage: file.path.split('\\')[file.path.split('\\').length - 1].replace('.njk',''),
+        .pipe(modules.data((file) => {
+          const filePath = file.path.replace(/\\/g, '/');
+
+          return {
+            file: filePath.split('/')[filePath.split('/').length - 2],
+            namepage: filePath.split('/')[filePath.split('/').length - 2],
             data: DATA,
-            cacheVersion: generateRandomNumber.version,
-            EVN_APPLICATION: EVN_APPLICATION.prod,
+            CACHE_VERSION: generateRandomNumber.version,
+            EVN_APPLICATION: EVN_APPLICATION.dev,
             LAYOUT_CONFIG: {
-              'imageUrl' : APP.dist.images,
-              'cssUrl' : APP.dist.css,
-              'jsUrl' : APP.dist.js,
+              'imageUrl' : strProjectStaticUrl + '/image',
+              'cssUrl' : strProjectStaticUrl + '/css/',
+              'jsUrl' : strProjectStaticUrl + '/js/',
             }
           }
-        )))
+        }))
         .pipe(modules.nunjucksRender({
+          ext: '.html',
           data: {
             objGlobal: RESOURCE,
-            intRandomNumber: Math.random() * 10
+            intRandomNumber : Math.random() * 10
           }
         }))
-        .pipe(modules.rename(
-          foldername + '.html'
+        .pipe(modules.rename(function(path) {
+            path.basename = foldername;
+          }
         ))
         .pipe(modules.print(
           filepath => `built: ${filepath}`
@@ -810,6 +827,8 @@ export const browserSyncTask = {
         reloadDelay: 300, // Fix htmlprocess watch not change
         open: false, // Stop auto open browser
         cors: false,
+        port: RESOURCE.port,
+        host: RESOURCE.host,
         notifier: {
           styles: [
             "display: none; ",
