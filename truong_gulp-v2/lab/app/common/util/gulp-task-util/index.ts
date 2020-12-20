@@ -11,7 +11,6 @@ import { ARR_FILE_EXTENSION } from '@common/define/file-define';
 import GenerateRandom from '@common/enum/random-enum';
 
 import { forIn as _forIn } from 'lodash';
-
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
@@ -39,6 +38,7 @@ if(process.env.NODE_ENV === 'dev') {
   strProjectHostUrl = 'http://' + RESOURCE.host + ':' + RESOURCE.port;
   strProjectStaticUrl = 'http://static.' + RESOURCE.host + ':' + RESOURCE.port;
 }
+
 /* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
@@ -78,23 +78,12 @@ const __moveFiles = function(arrMoveFilesConfig: ArrMoveFilesConfigConstruct) {
 };
 
 //! ANCHOR - update sass cache version
-// const __setEnvCacheVersion = function() {
-//   // NOTE - Init tạo cache version cho sass
-//   modules.gulp.src(APP.src.scss + '/var/_root-env.scss')
-//   .pipe(modules.rename(function(path) {
-//     path.basename = '_env';
-//   }))
-//   .pipe(modules.gulp.dest(APP.src.scss + '/var/'));
-// };
-
 const __initCacheVersion = function() {
   console.log(modules.ansiColors.blueBright(`update new Sass cache version: ${generateRandomNumber.version}`));
   console.log(modules.ansiColors.blueBright(`update new Nunjucks cache version: ${generateRandomNumber.version}`));
 };
 
 /* ------------------------------- INIT METHOD ------------------------------ */
-// __setEnvCacheVersion();
-
 // NOTE Update new cache versioh mỗi 10 phút
 setInterval(function() {
   generateRandomNumber.updateVersion();
@@ -829,6 +818,15 @@ export const browserSyncTask = {
         cors: false,
         port: RESOURCE.port,
         host: RESOURCE.host,
+        server: {
+          baseDir: APP.tmp.path,
+          index: "index.html",
+          listen: RESOURCE.ip_address + ':' + RESOURCE.port,
+          name: RESOURCE.host,
+          location: {
+              proxy_pass: 'http://127.0.0.1:' + RESOURCE.port,
+          }
+        },
         notifier: {
           styles: [
             "display: none; ",
@@ -846,10 +844,10 @@ export const browserSyncTask = {
             "box-shadow: 0 0 5px rgba(0,0,0,0.3);"
           ]
         },
-        server: {
-          baseDir: APP.tmp.path,
-          index: "index.html"
-        }
+        // server: {
+        //   baseDir: APP.tmp.path,
+        //   index: "index.html"
+        // }
       }); // end modules.browserSync
     }); // end modules.gulp
   },

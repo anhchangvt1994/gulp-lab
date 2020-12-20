@@ -29,8 +29,8 @@ interface ResourceConstruct {
 const RESOURCE: ResourceConstruct = {
   'project': 'gulp',
   'port': '80',
-  'ip_address': '192.168.100.8',
-  'host': 'gulp-dev.vn',
+  'ip_address': null,
+  'host': 'dev.vn',
   'local': 'localhost',
 
   'path': {
@@ -71,5 +71,21 @@ const RESOURCE: ResourceConstruct = {
     },
   },
 };
+
+//=======================================
+// NOTE - generate External IP
+//=======================================
+const os = require('os');
+const OSNetworkInterfaces = os.networkInterfaces();
+const Ethernet = OSNetworkInterfaces.Ethernet;
+
+if(Ethernet) {
+  Ethernet.some(function(ethernetItem) {
+    if(ethernetItem.family.toLowerCase() === 'ipv4') {
+      RESOURCE.ip_address = ethernetItem.address;
+      return true;
+    }
+  });
+}
 
 export default RESOURCE;
