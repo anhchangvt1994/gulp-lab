@@ -19,6 +19,7 @@ import babel = require('gulp-babel');
 import bebelMinify = require('gulp-babel-minify');
 import gulpBrowserify = require('gulp-browserify');
 import babelify = require('babelify');
+import vueify = require('vueify');
 import source = require('vinyl-source-stream');
 import rename = require('gulp-rename');
 import buffer = require('vinyl-buffer');
@@ -39,6 +40,8 @@ import notifier = require('node-notifier');
 import notifierToaster = require('node-notifier/notifiers/toaster');
 import util = require('gulp-util');
 import eslint = require('gulp-eslint');
+import livereload = require('gulp-livereload');
+import gap = require('gulp-append-prepend');
 
 export default {
   gulp,
@@ -61,6 +64,7 @@ export default {
   bebelMinify,
   gulpBrowserify,
   babelify,
+  vueify,
   source,
   rename,
   buffer,
@@ -82,4 +86,6 @@ export default {
   util,
   uuidv4,
   eslint,
+  livereload,
+  gap,
 }

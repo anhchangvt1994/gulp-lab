@@ -146,7 +146,8 @@ const _copyImagesTmpTask = function() {
         */
       }
     ))
-    .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.livereload({start: true}));
   });
 };
 
@@ -196,7 +197,8 @@ const _copyFontsTask = function(arrTaskConfig: ArrTaskConfigConstruct) {
         prefix: 2
       }
     ))
-    .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.livereload({start: true}));
   });
 };
 
@@ -260,6 +262,7 @@ const _convertSassTmpTask = function() {
     .pipe(modules.rename(function(path) {
       // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
       path.dirname = '';
+      path.basename+='-style';
 
       // NOTE Nếu construct CSS đối với path file name hiện tại đang rỗng thì nạp vào
       if(!ARR_TMP_CONSTRUCT[TYPE_FILE_CSS][path.basename]) {
@@ -285,7 +288,8 @@ const _convertSassTmpTask = function() {
       }
     }))
     .pipe(modules.gulp.dest(APP.tmp.css))
-    .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.livereload({start: true}));
   });
 
   // NOTE xử lý phụ sau khi sass compile finish
@@ -363,7 +367,7 @@ const _compileJsTmpTask = function() {
 
     let _arrJsErrorFileList = [];
 
-    return modules.gulp.src(APP.src.js + '/**/*.js')
+    return modules.gulp.src([APP.src.js + '/**/*.js', APP.src.js + '/**/component/*.vue'])
     .pipe(modules.plumber({
       'errorHandler': function(err) {
         _arrJsErrorFileList.push(err.fileName);
@@ -420,6 +424,27 @@ const _compileJsTmpTask = function() {
         _isError = false;
       }
 
+      // if(
+      //   !isFirstCompileAll &&
+      //   filename !== 'index.js' &&
+      //   filePathData
+      // ) {
+      //   filePathData.forEach(function(strFilePath) {
+      //     modules.gulp.src(strFilePath)
+      //     .pipe(
+      //       modules.gap.prependText(`// changed ${ Date.now() }`)
+      //     )
+      //     .pipe(modules.rename(function(path) {
+      //       path.basename = 'index';
+      //     }))
+      //     .pipe(
+      //       modules.gulp.dest(strFilePath.replace('index.js',''), {overwrite: true})
+      //     )
+      //   });
+
+      //   return;
+      // }
+
       if(filePathData) {
         filePathData.forEach(function(strFilePath) {
           modules.gulp.src(strFilePath)
@@ -431,23 +456,27 @@ const _compileJsTmpTask = function() {
           .pipe(
             modules.gulpBrowserify(
             {
-              transform: modules.babelify.configure({
-                presets: ["@babel/env"],
-                plugins: [
-                  ['module-resolver', {
-                    "alias": {
-                      "~jsPath": './src/js',
-                      "~jsPartialPath": './src/js/partial',
-                    }
-                  }]
-                ]
-              }),
+              transform: [
+                modules.babelify.configure({
+                  presets: ["@babel/env"],
+                  plugins: [
+                    ['module-resolver', {
+                      "alias": {
+                        "~jsPath": './src/js',
+                        "~jsPartialPath": './src/js/partial',
+                      }
+                    }]
+                  ]
+                }),
+                [{_flags: {debug: true}}, 'vueify'],
+                'aliasify'
+              ],
             })
           )
-          .on('error', function(err) {
-            this.emit('end');
-          })
           .pipe(modules.rename(function(path) {
+            const filename = strFilePath.split('\\').slice(-2)[1];
+            const foldername = strFilePath.split('\\').slice(-2)[0];
+
             path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
             // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
@@ -466,16 +495,25 @@ const _compileJsTmpTask = function() {
               });
             }
           }))
+          .on('error', function(err) {
+            this.emit('end');
+          })
           .pipe(
             modules.gulp.dest(APP.tmp.js)
-          );
+          )
+          // .pipe(modules.browserSync.reload({ stream: true }));
+          // .pipe(modules.livereload({start: true}));
         });
       }
     }))
   });
 };
 
+
+
 //-- end compile js tmp
+
+
 const _endCompileJsTmpTask = function() {
   // NOTE xử lý phụ sau khi js compile finish
   modules.gulp.task('jsEndTmp', function(cb) {
@@ -663,7 +701,8 @@ const _convertNunjuckTmpTask = function() {
             }
           }))
           .pipe(modules.gulp.dest(APP.tmp.path))
-          .pipe(modules.browserSync.reload({ stream: true }));
+          // .pipe(modules.browserSync.reload({ stream: true }));
+          // .pipe(modules.livereload({start: true}));
         });
       }
     }));
@@ -805,6 +844,17 @@ export const doAfterBuildTask = {
   }
 };
 
+//! ANCHOR - BrowserSync Reload
+export const browserSyncReloadTask = {
+  'name': 'browserSyncReload',
+  'init': function() {
+    modules.gulp.task('browserSyncReload', (cb) => {
+      modules.browserSync.reload()
+      cb();
+    });
+  },
+}; // browserSyncReloadTask
+
 //! ANCHOR - browserSyncTask
 //-- browserSync task
 //? sử dụng để sync result lên browser khi code
@@ -813,20 +863,20 @@ export const browserSyncTask = {
   'init': function() {
     modules.gulp.task("browserSync", function() {
       return modules.browserSync.init({
-        reloadDelay: 300, // Fix htmlprocess watch not change
+        reloadDelay: 90, // Fix htmlprocess watch not change
         open: false, // Stop auto open browser
         cors: false,
         port: RESOURCE.port,
-        host: RESOURCE.host,
-        server: {
-          baseDir: APP.tmp.path,
-          index: "index.html",
-          listen: RESOURCE.ip_address + ':' + RESOURCE.port,
-          name: RESOURCE.host,
-          location: {
-              proxy_pass: 'http://127.0.0.1:' + RESOURCE.port,
-          }
-        },
+        host: RESOURCE.ip_address,
+        // server: {
+        //   baseDir: APP.tmp.path,
+        //   index: "index.html",
+        //   listen: RESOURCE.ip_address + ':' + RESOURCE.port,
+        //   name: RESOURCE.host,
+        //   location: {
+        //       proxy_pass: 'http://127.0.0.1:' + RESOURCE.port,
+        //   }
+        // },
         notifier: {
           styles: [
             "display: none; ",
@@ -844,10 +894,10 @@ export const browserSyncTask = {
             "box-shadow: 0 0 5px rgba(0,0,0,0.3);"
           ]
         },
-        // server: {
-        //   baseDir: APP.tmp.path,
-        //   index: "index.html"
-        // }
+        server: {
+          baseDir: APP.tmp.path,
+          index: "index.html"
+        }
       }); // end modules.browserSync
     }); // end modules.gulp
   },

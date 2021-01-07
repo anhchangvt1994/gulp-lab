@@ -121,7 +121,13 @@ class Dependents {
         continue;
       }
 
-      const strDependentFileName = arrFilePathSplit.slice(-2)[1] + '.' + ARR_EXTENSION_FILE.JS_EXTENSION;
+      let strDependentFileName = null;
+
+      if(arrFilePathSplit.slice(-2)[1].indexOf('.vue') !== -1) {
+        strDependentFileName = arrFilePathSplit.slice(-2)[1];
+      } else {
+        strDependentFileName = arrFilePathSplit.slice(-2)[1] + '.' + ARR_EXTENSION_FILE.JS_EXTENSION;
+      }
 
       if(arrTmpCurMainFile.indexOf(strDependentFileName) === -1) {
         arrTmpCurMainFile.push(strDependentFileName);

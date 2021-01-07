@@ -1,8 +1,12 @@
 import APP from '@common/enum/source-enum';
-import { convertSassTask, copyImagesTask, copyFontsTask, compileJsTask, convertNunjuckTask } from '@common/util/gulp-task-util';
+import modules from '@common/define/module-define';
+import { convertSassTask, copyImagesTask, copyFontsTask, compileJsTask, convertNunjuckTask, browserSyncReloadTask } from '@common/util/gulp-task-util';
 import gulp = require('gulp');
 import del = require('del');
 import path = require('path');
+
+/* --------------------------------- INIT --------------------------------- */
+browserSyncReloadTask.init();
 
 /* --------------------------------- METHOD --------------------------------- */
 //! ANCHOR - __groupWatchFiles
@@ -14,7 +18,7 @@ interface arrRelativeTaskListConstruct {
 };
 
 interface arrWatchFilesConfigConstruct {
-  'sourcePathUrl': string,
+  'sourcePathUrl': string | Array<string>,
   'relativeTaskList': arrRelativeTaskListConstruct,
 };
 
@@ -63,6 +67,7 @@ const __groupWatchFiles = function(arrWatchFilesConfig: arrWatchFilesConfigConst
 const _watchScssTask = function() {
   gulp.watch(APP.src.scss + '/**/*.scss', gulp.series(
     convertSassTask.tmp.name,
+    browserSyncReloadTask.name,
   ));
 };
 
@@ -85,12 +90,13 @@ const _watchFontsTask = function() {
 //! ANCHOR  - watchJsTask
 //-- watch js files change task
 const _watchJsTask = function() {
-  gulp.watch(APP.src.js + '/**/*.js', gulp.series(
+  gulp.watch([APP.src.js + '/**/*.js', APP.src.js + '/**/component/*.vue'], gulp.series(
     compileJsTask.tmp.name,
+    browserSyncReloadTask.name,
   ));
 
   __groupWatchFiles({
-    'sourcePathUrl': APP.src.js + '/**/*.js',
+    'sourcePathUrl': [APP.src.js + '/**/*.js', APP.src.js + '/**/component/*.vue'],
     'relativeTaskList': {
       'remove': function(filePath) {
         let filename = filePath.split('\\').slice(-2)[1];
@@ -119,6 +125,7 @@ export const watchJsTask = {
 const _watchNunjuckTask = function() {
   gulp.watch(APP.src.njk + '/**/*.njk', gulp.series(
     convertNunjuckTask.tmp.name,
+    browserSyncReloadTask.name,
   ));
 
   __groupWatchFiles({

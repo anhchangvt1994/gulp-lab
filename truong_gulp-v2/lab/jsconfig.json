@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~jsPath": ["./src/js"],
+      "~jsPartialPath": ["./src/js/partial'"],
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tmp"
+  ]
+}

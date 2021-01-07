@@ -1,5 +1,7 @@
 .introduction {
-  &__block {}
+  &__block {
+    background-color: greenyellow;
+  }
 
   &__wrap {
     // display: flex;
