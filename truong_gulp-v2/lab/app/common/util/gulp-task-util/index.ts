@@ -453,10 +453,10 @@ const _compileJsTmpTask = function() {
             })
           )
           .pipe(modules.rename(function(path) {
-            const filePath = file.path.replace(/\\/g, '/');
+            const filePath = strFilePath.replace(/\\/g, '/');
 
-            const filename = strFilePath.split('/').slice(-2)[1];
-            const foldername = strFilePath.split('/').slice(-2)[0];
+            const filename = filePath.split('/').slice(-2)[1];
+            const foldername = filePath.split('/').slice(-2)[0];
 
             path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
