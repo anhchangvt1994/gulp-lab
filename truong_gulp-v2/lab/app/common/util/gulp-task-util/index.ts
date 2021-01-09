@@ -10,7 +10,7 @@ import { ARR_FILE_EXTENSION } from '@common/define/file-define';
 
 import GenerateRandom from '@common/enum/random-enum';
 
-import { forIn as _forIn } from 'lodash';
+import { forIn as _forIn, isEmpty as _isEmpty } from 'lodash';
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
@@ -129,7 +129,7 @@ export const cleanTask = {
 //-- copy images to tmp ( chỉ dùng khi build vào tmp folder )
 const _copyImagesTmpTask = function() {
   modules.gulp.task('copyImagesTmp', function() {
-    return modules.gulp.src(APP.src.images + '/**/*.{jpg,png,gif,svg,ico}')
+    return modules.gulp.src(APP.src.image + '/**/*.{jpg,png,gif,svg,ico}')
     .pipe(modules.plumber())
     .pipe(modules.cached('jpg,png,gif,svg,ico'))
     .pipe(modules.print(
@@ -138,7 +138,7 @@ const _copyImagesTmpTask = function() {
       }
     ))
     .pipe(modules.copy(
-      APP.tmp.images,
+      APP.tmp.image,
       {
         prefix: 2
         /*chúng ta có thể sử dụng gulp.dest để dẫn đến thư mục cần thiết, nếu chưa có thì auto tạo. Mục đích duy nhất để ta sử dụng prefix là để chúng ta xác định số cấp thư mục vào đến thư mục mà ta cần. Bắt đầu tính từ thư mục gốc
@@ -155,13 +155,13 @@ const _copyImagesTmpTask = function() {
 //-- copy images to dist ( chỉ dùng khi build vào dist folder )
 const _copyImagesDistTask = function() {
   modules.gulp.task('copyImagesDist', function() {
-    return modules.gulp.src(APP.src.images + '/**/*.{jpg,png,gif,svg,ico}')
+    return modules.gulp.src(APP.src.image + '/**/*.{jpg,png,gif,svg,ico}')
     .pipe(modules.imageMin([
       modules.imageMin.gifsicle({interlaced: true}),
       modules.imageMin.mozjpeg({quality: 80, progressive: true}),
       modules.imageMin.optipng({optimizationLevel: 5}),
     ]))
-    .pipe(modules.gulp.dest(APP.dist.images));
+    .pipe(modules.gulp.dest(APP.dist.image));
   });
 };
 
@@ -185,7 +185,7 @@ interface ArrTaskConfigConstruct {
 
 const _copyFontsTask = function(arrTaskConfig: ArrTaskConfigConstruct) {
   modules.gulp.task(arrTaskConfig.name, function() {
-    return modules.gulp.src(APP.src.fonts + '/**/*.{svg,eot,otf,ttf,woff,woff2}')
+    return modules.gulp.src(APP.src.font + '/**/*.{svg,eot,otf,ttf,woff,woff2}')
     .pipe(modules.cached('fonts'))
     .pipe(modules.print((filepath) => {
       return modules.ansiColors.green(`copy font: ${filepath}`);
@@ -208,7 +208,7 @@ export const copyFontsTask = {
     'init': function() {
       _copyFontsTask({
         'name': 'copyFontsTmp',
-        'pathUrl': APP.tmp.fonts,
+        'pathUrl': APP.tmp.font,
       });
     },
   },
@@ -217,7 +217,7 @@ export const copyFontsTask = {
     'init': function() {
       _copyFontsTask({
         'name': 'copyFontsDist',
-        'pathUrl': APP.dist.fonts,
+        'pathUrl': APP.dist.font,
       });
     }
   }
@@ -436,6 +436,7 @@ const _compileJsTmpTask = function() {
             modules.gulpBrowserify(
             {
               transform: [
+                [{_flags: {debug: true}}, 'vueify'],
                 modules.babelify.configure({
                   presets: ["@babel/env"],
                   plugins: [
@@ -447,7 +448,6 @@ const _compileJsTmpTask = function() {
                     }]
                   ]
                 }),
-                [{_flags: {debug: true}}, 'vueify'],
                 'aliasify'
               ],
             })
@@ -490,11 +490,7 @@ const _compileJsTmpTask = function() {
   });
 };
 
-
-
 //-- end compile js tmp
-
-
 const _endCompileJsTmpTask = function() {
   // NOTE xử lý phụ sau khi js compile finish
   modules.gulp.task('jsEndTmp', function(cb) {
@@ -510,7 +506,7 @@ const _endCompileJsTmpTask = function() {
 //-- compile js into dist
 const _compileJsDistTask = function() {
   modules.gulp.task('jsDist', function() {
-    if(ARR_TMP_CONSTRUCT[TYPE_FILE_JS]) {
+    if(!_isEmpty(ARR_TMP_CONSTRUCT[TYPE_FILE_JS])) {
       return __moveFiles(
         {
           'sourcePathUrl': APP.tmp.js + '/*.' + TYPE_FILE_JS,
@@ -521,11 +517,12 @@ const _compileJsDistTask = function() {
     } else {
       return modules.gulp.src(APP.src.js + '/**/*.js')
       .pipe(modules.tap(function(file) {
-
         const filePath = file.path.replace(/\\/g, '/');
         // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
         const filename = filePath.split('/').slice(-2)[1];
         const foldername = filePath.split('/').slice(-2)[0];
+
+        console.log(filename);
 
         if(
           filename === 'index.js' ||
@@ -533,13 +530,26 @@ const _compileJsDistTask = function() {
         ) {
           // NOTE Nếu là file index hoặc file thuộc folder js cấp đầu tiên thì mới thực hiện compile
           modules.gulp.src(file.path)
-          .pipe(modules.gulpBrowserify(
+          .pipe(
+            modules.gulpBrowserify(
             {
-              transform: modules.babelify.configure({
-                presets: ["@babel/env"]
-              }),
-            }
-          ))
+              transform: [
+                [{_flags: {debug: true}}, 'vueify'],
+                modules.babelify.configure({
+                  presets: ["@babel/env"],
+                  plugins: [
+                    ['module-resolver', {
+                      "alias": {
+                        "~jsPath": './src/js',
+                        "~jsPartialPath": './src/js/partial',
+                      }
+                    }]
+                  ]
+                }),
+                'aliasify'
+              ],
+            })
+          )
           .pipe(modules.rename(
             foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
           ))
@@ -629,8 +639,8 @@ const _convertNunjuckTmpTask = function() {
               EVN_APPLICATION: EVN_APPLICATION.dev,
               LAYOUT_CONFIG: {
                 'imageUrl' : strProjectStaticUrl + '/image', // NOTE - Vì image sử dụng trong layout config cho những file render numjuck sang html thường có dạng '{{ LAYOUT_CONFIG.imageUrl }}/fantasy-image08.jpg' nên để dev tự thêm / sẽ clear hơn khi sử dụng với nunjuck
-                'cssUrl' : strProjectStaticUrl + '/css/',
-                'jsUrl' : strProjectStaticUrl + '/js/',
+                'cssUrl' : strProjectStaticUrl + '/tmp/css/',
+                'jsUrl' : strProjectStaticUrl + '/tmp/js/',
               }
             }
           }))
@@ -877,7 +887,7 @@ export const browserSyncTask = {
           ]
         },
         server: {
-          baseDir: APP.tmp.path,
+          baseDir: APP.lab.path,
         }
       }); // end modules.browserSync
     }); // end modules.gulp

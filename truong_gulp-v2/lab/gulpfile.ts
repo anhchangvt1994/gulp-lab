@@ -82,14 +82,14 @@ gulp.task('dev:template', gulp.series(
   cleanTask.tmp.name,
   gulp.parallel(
     convertSassTask.tmp.name,
-    copyFontsTask.tmp.name,
+    // copyFontsTask.tmp.name,
 
     gulp.series(
       compileJsTask.tmp.name,
       compileJsTask.endTmp.name,
     ),
 
-    copyImagesTask.tmp.name,
+    // copyImagesTask.tmp.name,
   ),
   convertNunjuckTask.tmp.name,
   convertNunjuckTask.endTmp.name,
@@ -105,14 +105,14 @@ gulp.task('dev', gulp.series(
   cleanTask.tmp.name,
   gulp.parallel(
     convertSassTask.tmp.name,
-    copyFontsTask.tmp.name,
+    // copyFontsTask.tmp.name,
 
     gulp.series(
       compileJsTask.tmp.name,
       compileJsTask.endTmp.name,
     ),
 
-    copyImagesTask.tmp.name,
+    // copyImagesTask.tmp.name,
   ),
 
   doAfterBuildTask.name,

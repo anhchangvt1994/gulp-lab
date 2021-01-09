@@ -1,6 +1,8 @@
 const _DIR_PATH = __dirname.replace(/\\/g, '/');
 const _LAB_PATH = _DIR_PATH.split('/app')[0]
 
+const _APP_LAB_PATH: string = _LAB_PATH + '/'; // url của lab directory
+
 const _APP_SRC_PATH: string = _LAB_PATH + '/src/'; // url của source directory (nơi để dev)
 
 const _APP_TMP_PATH: string = _LAB_PATH + '/tmp/'; // url của temp directory (nơi để built source deploy)
@@ -12,8 +14,8 @@ interface AppItemConstruct {
   scss?: string,
   css?: string,
   js: string,
-  images: string,
-  fonts: string,
+  image: string,
+  font: string,
   njk?: string,
   data?: string,
   urlConfig?: string,
@@ -28,14 +30,14 @@ interface AppConstruct {
 
 const APP: AppConstruct = {
   lab: {
-    path: _LAB_PATH,
+    path: _APP_LAB_PATH,
   },
   src: {
     path : _APP_SRC_PATH,
     scss : _APP_SRC_PATH + 'scss',
     js : _APP_SRC_PATH + 'js',
-    images : _APP_SRC_PATH + 'image',
-    fonts : _APP_SRC_PATH + 'fonts',
+    image : _APP_LAB_PATH + 'image',
+    font : _APP_LAB_PATH + 'font',
     njk : _APP_SRC_PATH + 'njk',
     data : _APP_SRC_PATH + 'data',
     urlConfig : _APP_SRC_PATH + 'urlConfig',
@@ -45,16 +47,16 @@ const APP: AppConstruct = {
     path : _APP_TMP_PATH,
     css : _APP_TMP_PATH + 'css',
     js : _APP_TMP_PATH + 'js',
-    images : _APP_TMP_PATH + 'image',
-    fonts : _APP_TMP_PATH + 'fonts',
+    image : _APP_LAB_PATH + 'image',
+    font : _APP_LAB_PATH + 'font',
   },
 
   dist: {
     path : _APP_DIST_PATH,
     css : _APP_DIST_PATH + 'css',
     js : _APP_DIST_PATH + 'js',
-    images : _APP_DIST_PATH + 'image',
-    fonts : _APP_DIST_PATH + 'fonts',
+    image : _APP_DIST_PATH + 'image',
+    font : _APP_DIST_PATH + 'font',
   }
 };
 

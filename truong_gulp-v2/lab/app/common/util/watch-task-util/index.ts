@@ -80,7 +80,7 @@ export const watchScssTask = {
 //-- watch font files change task
 const _watchFontsTask = function() {
   __groupWatchFiles({
-    'sourcePathUrl': APP.src.fonts + '/**/*.{svg,eot,otf,ttf,woff,woff2}',
+    'sourcePathUrl': APP.src.font + '/**/*.{svg,eot,otf,ttf,woff,woff2}',
     'relativeTaskList': {
       'add': copyFontsTask.tmp.name,
     },
@@ -158,7 +158,7 @@ export const watchNunjuckTask = {
 //-- watch image files change task
 const _watchImagesTask = function() {
   __groupWatchFiles({
-    'sourcePathUrl': APP.src.images + '/**/*.{jpg,png,gif,svg,ico}',
+    'sourcePathUrl': APP.src.image + '/**/*.{jpg,png,gif,svg,ico}',
     'relativeTaskList': {
       'add': copyImagesTask.tmp.name,
     },

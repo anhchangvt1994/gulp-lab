@@ -18,7 +18,7 @@ export default {
 
   methods: {
     setTestValue() {
-      this.test = 'hello javascript!!!';
+      this.test = 'hello vuejs!!!';
     }, // setTestValue()
   },
 };
