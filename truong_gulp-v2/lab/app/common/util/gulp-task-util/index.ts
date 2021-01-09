@@ -146,7 +146,7 @@ const _copyImagesTmpTask = function() {
         */
       }
     ))
-    // .pipe(modules.browserSync.reload({ stream: true }));
+    .pipe(modules.browserSync.reload({ stream: true }));
     // .pipe(modules.livereload({start: true}));
   });
 };
@@ -197,7 +197,7 @@ const _copyFontsTask = function(arrTaskConfig: ArrTaskConfigConstruct) {
         prefix: 2
       }
     ))
-    // .pipe(modules.browserSync.reload({ stream: true }));
+    .pipe(modules.browserSync.reload({ stream: true }));
     // .pipe(modules.livereload({start: true}));
   });
 };
@@ -288,7 +288,7 @@ const _convertSassTmpTask = function() {
       }
     }))
     .pipe(modules.gulp.dest(APP.tmp.css))
-    // .pipe(modules.browserSync.reload({ stream: true }));
+    .pipe(modules.browserSync.reload({ stream: true }));
     // .pipe(modules.livereload({start: true}));
   });
 
@@ -424,27 +424,6 @@ const _compileJsTmpTask = function() {
         _isError = false;
       }
 
-      // if(
-      //   !isFirstCompileAll &&
-      //   filename !== 'index.js' &&
-      //   filePathData
-      // ) {
-      //   filePathData.forEach(function(strFilePath) {
-      //     modules.gulp.src(strFilePath)
-      //     .pipe(
-      //       modules.gap.prependText(`// changed ${ Date.now() }`)
-      //     )
-      //     .pipe(modules.rename(function(path) {
-      //       path.basename = 'index';
-      //     }))
-      //     .pipe(
-      //       modules.gulp.dest(strFilePath.replace('index.js',''), {overwrite: true})
-      //     )
-      //   });
-
-      //   return;
-      // }
-
       if(filePathData) {
         filePathData.forEach(function(strFilePath) {
           modules.gulp.src(strFilePath)
@@ -474,8 +453,10 @@ const _compileJsTmpTask = function() {
             })
           )
           .pipe(modules.rename(function(path) {
-            const filename = strFilePath.split('\\').slice(-2)[1];
-            const foldername = strFilePath.split('\\').slice(-2)[0];
+            const filePath = file.path.replace(/\\/g, '/');
+
+            const filename = strFilePath.split('/').slice(-2)[1];
+            const foldername = strFilePath.split('/').slice(-2)[0];
 
             path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
@@ -501,7 +482,7 @@ const _compileJsTmpTask = function() {
           .pipe(
             modules.gulp.dest(APP.tmp.js)
           )
-          // .pipe(modules.browserSync.reload({ stream: true }));
+          .pipe(modules.browserSync.reload({ stream: true }));
           // .pipe(modules.livereload({start: true}));
         });
       }
@@ -701,7 +682,7 @@ const _convertNunjuckTmpTask = function() {
             }
           }))
           .pipe(modules.gulp.dest(APP.tmp.path))
-          // .pipe(modules.browserSync.reload({ stream: true }));
+          .pipe(modules.browserSync.reload({ stream: true }));
           // .pipe(modules.livereload({start: true}));
         });
       }
@@ -863,7 +844,7 @@ export const browserSyncTask = {
   'init': function() {
     modules.gulp.task("browserSync", function() {
       return modules.browserSync.init({
-        reloadDelay: 90, // Fix htmlprocess watch not change
+        reloadDelay: 150, // Fix htmlprocess watch not change
         open: false, // Stop auto open browser
         cors: false,
         port: RESOURCE.port,
@@ -877,6 +858,7 @@ export const browserSyncTask = {
         //       proxy_pass: 'http://127.0.0.1:' + RESOURCE.port,
         //   }
         // },
+        injectChanges: false,
         notifier: {
           styles: [
             "display: none; ",
@@ -896,7 +878,6 @@ export const browserSyncTask = {
         },
         server: {
           baseDir: APP.tmp.path,
-          index: "index.html"
         }
       }); // end modules.browserSync
     }); // end modules.gulp

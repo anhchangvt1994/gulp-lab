@@ -27,7 +27,7 @@ const test = (() => {
 
   return {
     init() {
-      console.log('run');
+      // console.log('run');
       testFunc();
 
       _renderTestComponent();

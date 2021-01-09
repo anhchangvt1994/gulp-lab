@@ -18,7 +18,7 @@ interface PathListItemDataConstruct {
 
 interface ResourceConstruct {
   'project': string,
-  'port': string, // NOTE - Lưu ý những thông tin này cần được config trong file host trước
+  'port': any, // NOTE - Lưu ý những thông tin này cần được config trong file host trước
   'ip_address': string, // NOTE - Lưu ý những thông tin này cần được config trong file host trước
   'host': string, // NOTE - Lưu ý những thông tin này cần được config trong file host trước
   'local': string,
@@ -28,7 +28,7 @@ interface ResourceConstruct {
 
 const RESOURCE: ResourceConstruct = {
   'project': 'gulp',
-  'port': '80',
+  'port': process.env.PORT || 3000,
   'ip_address': null,
   'host': 'dev.vn',
   'local': 'localhost',
@@ -77,12 +77,14 @@ const RESOURCE: ResourceConstruct = {
 //=======================================
 const os = require('os');
 const OSNetworkInterfaces = os.networkInterfaces();
-const Ethernet = OSNetworkInterfaces.Ethernet;
+const Ethernet = OSNetworkInterfaces.Ethernet || Object.values(OSNetworkInterfaces);
 
 if(Ethernet) {
   Ethernet.some(function(ethernetItem) {
-    if(ethernetItem.family.toLowerCase() === 'ipv4') {
-      RESOURCE.ip_address = ethernetItem.address;
+    const ethernetItemInfo = ethernetItem.family ? ethernetItem : ethernetItem[0];
+
+    if(ethernetItemInfo.family.toLowerCase() === 'ipv4') {
+      RESOURCE.ip_address = ethernetItemInfo.address;
       return true;
     }
   });
