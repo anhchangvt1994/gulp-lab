@@ -1,5 +1,4 @@
 import APP from '@common/enum/source-enum';
-import modules from '@common/define/module-define';
 import { convertSassTask, copyImagesTask, copyFontsTask, compileJsTask, convertNunjuckTask, browserSyncReloadTask } from '@common/util/gulp-task-util';
 import gulp = require('gulp');
 import del = require('del');
@@ -175,10 +174,10 @@ export const watchImagesTask = {
 const _watchTmpWithTemplateTask = function() {
   gulp.task('watch-tmp-with-template', function() {
     _watchScssTask();
-    _watchFontsTask();
+    // _watchFontsTask();
     _watchJsTask();
     _watchNunjuckTask();
-    _watchImagesTask();
+    // _watchImagesTask();
   });
 };
 
@@ -186,9 +185,9 @@ const _watchTmpWithTemplateTask = function() {
 const _watchTmpWithoutTemplateTask = function() {
   gulp.task('watch', function() {
     _watchScssTask();
-    _watchFontsTask();
+    // _watchFontsTask();
     _watchJsTask();
-    _watchImagesTask();
+    // _watchImagesTask();
   });
 };
 

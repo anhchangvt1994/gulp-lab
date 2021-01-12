@@ -3,6 +3,7 @@ import gulp = require('gulp');
 import clean = require('gulp-clean');
 import copy = require('gulp-copy');
 import sass = require('gulp-sass');
+import dartSass = require('gulp-dart-sass');
 
 //-- sub dependencies
 import plumber = require('gulp-plumber');
@@ -47,6 +48,7 @@ export default {
   gulp,
   clean,
   sass,
+  dartSass,
   copy,
 
   // sub dependencies

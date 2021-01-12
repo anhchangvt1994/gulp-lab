@@ -1,0 +1,12 @@
+{% extends  objGlobal.path.njk + '/_layout.njk' %}
+
+{% set bodyClass = 'home-page' %}
+{% set pageHeadTitle = 'gulp home page' %}
+
+<!-- ===============Body=============== -->
+
+{# {% block header %}{% endblock %} #}
+
+{% block body %}
+  {% include objGlobal.path.njk + "/home-page/_home-section.njk" %}
+{% endblock %}

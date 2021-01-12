@@ -146,7 +146,7 @@ const _copyImagesTmpTask = function() {
         */
       }
     ))
-    .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.browserSync.reload({ stream: true }));
     // .pipe(modules.livereload({start: true}));
   });
 };
@@ -197,7 +197,7 @@ const _copyFontsTask = function(arrTaskConfig: ArrTaskConfigConstruct) {
         prefix: 2
       }
     ))
-    .pipe(modules.browserSync.reload({ stream: true }));
+    // .pipe(modules.browserSync.reload({ stream: true }));
     // .pipe(modules.livereload({start: true}));
   });
 };
@@ -224,72 +224,78 @@ export const copyFontsTask = {
 };
 
 //! ANCHOR - convertSassTask
-//-- convert sass to css into tmp
 const _convertSassTmpTask = function() {
   modules.gulp.task('sassTmp', function() {
     let _isError = false;
 
     return modules.gulp.src(APP.src.scss + '/**/*.{scss,css}')
-    .pipe(modules.cached('scss'))
-    .pipe(modules.dependents())
-    .pipe(modules.print(
-      (filepath) => {
-        if(filepath.indexOf('_env.scss') !== -1) {
-          return modules.ansiColors.blueBright(`update new sass cache version: ${generateRandomNumber.version}`);
+    .pipe(
+      modules.tap(
+        function(file) {
+          const filePath = file.path.replace(/\\/g, '/');
+
+          modules.gulp.src(filePath)
+          .pipe(modules.cached('scss'))
+          .pipe(modules.dependents())
+          .pipe(modules.print(
+            (filepath) => {
+              if(filepath.indexOf('_env.scss') !== -1) {
+                return modules.ansiColors.blueBright(`update new sass cache version: ${generateRandomNumber.version}`);
+              }
+
+              return modules.ansiColors.yellow(`compile sass: ${filepath}`);
+            }
+          ))
+          .pipe(modules.sassVars({
+            '$var-cache-version': generateRandomNumber.version,
+          }))
+          .pipe(modules.dartSass.sync(
+            {
+              errLogToConsole: false,
+            }
+          ))
+          .on('error', function(err) {
+            _isError = true;
+            __handlerErrorUtil.handlerError(err, TYPE_FILE_CSS, isFirstCompileAll);
+
+            if(!isFirstCompileAll) {
+              __handlerErrorUtil.reportError();
+            }
+
+            this.emit('end');
+          })
+          .pipe(modules.rename(function(path) {
+            // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
+            path.dirname = '';
+            path.basename+='-style';
+
+            // NOTE Nếu construct CSS đối với path file name hiện tại đang rỗng thì nạp vào
+            if(!ARR_TMP_CONSTRUCT[TYPE_FILE_CSS][path.basename]) {
+              ARR_TMP_CONSTRUCT[TYPE_FILE_CSS][path.basename] = generateTmpDirItemConstruct({
+                'file-name': path.basename,
+                'file-path': APP.tmp.css + '/' + path.basename,
+              });
+            }
+
+            if(!isFirstCompileAll) {
+              // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
+              __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_CSS);
+              __handlerErrorUtil.reportError();
+              __handlerErrorUtil.notifSuccess();
+
+              _isError = false;
+
+              modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+                if(err) throw err;
+
+                console.log('write file: "tmp-construct-log.json" finish.');
+              });
+            }
+          }))
+          .pipe(modules.gulp.dest(APP.tmp.css))
         }
-
-        return modules.ansiColors.yellow(`compile sass: ${filepath}`);
-      }
-    ))
-    .pipe(modules.sassVars({
-      '$var-cache-version': generateRandomNumber.version,
-    }))
-    .pipe(modules.sass.sync(
-      {
-        errLogToConsole: false,
-      }
-    ))
-    .on('error', function(err) {
-      _isError = true;
-      __handlerErrorUtil.handlerError(err, TYPE_FILE_CSS, isFirstCompileAll);
-
-      if(!isFirstCompileAll) {
-        __handlerErrorUtil.reportError();
-      }
-
-      this.emit('end');
-    })
-    .pipe(modules.rename(function(path) {
-      // NOTE đưa tất cả các file về cấp folder root của nó (ở đây là css)
-      path.dirname = '';
-      path.basename+='-style';
-
-      // NOTE Nếu construct CSS đối với path file name hiện tại đang rỗng thì nạp vào
-      if(!ARR_TMP_CONSTRUCT[TYPE_FILE_CSS][path.basename]) {
-        ARR_TMP_CONSTRUCT[TYPE_FILE_CSS][path.basename] = generateTmpDirItemConstruct({
-          'file-name': path.basename,
-          'file-path': APP.tmp.css + '/' + path.basename,
-        });
-      }
-
-      if(!isFirstCompileAll) {
-        // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
-        __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_CSS);
-        __handlerErrorUtil.reportError();
-        __handlerErrorUtil.notifSuccess();
-
-        _isError = false;
-
-        modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
-          if(err) throw err;
-
-          console.log('write file: "tmp-construct-log.json" finish.');
-        });
-      }
-    }))
-    .pipe(modules.gulp.dest(APP.tmp.css))
-    .pipe(modules.browserSync.reload({ stream: true }));
-    // .pipe(modules.livereload({start: true}));
+      )
+    )
   });
 
   // NOTE xử lý phụ sau khi sass compile finish
@@ -482,7 +488,7 @@ const _compileJsTmpTask = function() {
           .pipe(
             modules.gulp.dest(APP.tmp.js)
           )
-          .pipe(modules.browserSync.reload({ stream: true }));
+          // .pipe(modules.browserSync.reload({ stream: true }));
           // .pipe(modules.livereload({start: true}));
         });
       }
@@ -692,7 +698,7 @@ const _convertNunjuckTmpTask = function() {
             }
           }))
           .pipe(modules.gulp.dest(APP.tmp.path))
-          .pipe(modules.browserSync.reload({ stream: true }));
+          // .pipe(modules.browserSync.reload({ stream: true }));
           // .pipe(modules.livereload({start: true}));
         });
       }
@@ -888,6 +894,7 @@ export const browserSyncTask = {
         },
         server: {
           baseDir: APP.lab.path,
+          index: "/tmp/home-page.html",
         }
       }); // end modules.browserSync
     }); // end modules.gulp
