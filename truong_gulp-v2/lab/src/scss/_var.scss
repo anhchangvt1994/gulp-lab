@@ -1,2 +1,13 @@
 $line-height-default: 1.5;
 $font-size-default: 8px;
+
+//===========================
+// color map
+//===========================
+$color-map: (
+  'gulp': #eb4a4b,
+  'ts':#0385d2,
+  'njk': #1c4913,
+  'sass': #cf649a,
+  'js': #fdd734,
+);

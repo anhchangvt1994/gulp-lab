@@ -7,19 +7,19 @@
   padding: 0 grid-function.get-space-from-base(2);
   margin: 0 auto;
 
-  @media (min-wdith: grid.$break-point-lg) {
+  @media (min-width: grid.$break-point-lg) {
     max-width: 768px;
   }
 
-  @media (min-wdith: grid.$break-point-lg) {
+  @media (min-width: grid.$break-point-lg) {
     max-width: 768px;
   }
 
-  @media (min-wdith: grid.$break-point-xl) {
+  @media (min-width: grid.$break-point-xl) {
     max-width: 1024px;
   }
 
-  @media (min-wdith: grid.$break-point-lg) {
+  @media (min-width: grid.$break-point-lg) {
     max-width: 1280px;
   }
 }

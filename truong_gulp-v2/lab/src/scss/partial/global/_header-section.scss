@@ -1,12 +1,73 @@
-.header {
-  &__wrap {
-    background: #b3ee3a;
-    padding: 10px;
-  }
+@use 'var' as var;
+@use 'sass:map';
+//===============================================
+// .header-section
+//===============================================
+$_header-bg-color: (
+  'gulp',
+  'ts',
+  'njk',
+  'sass',
+  'js'
+);
 
-  &__title {
-    text-align: center;
-    font-size: 30px;
-    font-weight: 500;
+.header-section {
+  position: relative;
+  z-index: 0;
+
+  &__bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+
+    @each $_header-bg-color-val in $_header-bg-color {
+      &.is-#{$_header-bg-color-val}-bg {
+        background: map.get(var.$color-map, $_header-bg-color-val);
+      }
+    }
   }
 }
+
+//===============================================
+// .header-block
+//===============================================
+.header-block {
+  height: 150px;
+
+  &__head {
+    position: relative;
+  } // .header-block__head
+
+  &__logo-shape {
+    position: absolute;
+    width: 140px;
+    overflow: hidden;
+    border-radius: 50%;
+    left: 0;
+    right: 0;
+    top: 70px;
+    margin: 0 auto;
+    border: 3px solid #ffffff;
+
+    &:before {
+      content: '';
+      display: block;
+      width: 100%;
+      padding-bottom: 100%;
+    }
+  }
+
+  &__logo-shape-inner {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+  }
+} // .header-block

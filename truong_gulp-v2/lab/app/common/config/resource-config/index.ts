@@ -47,27 +47,19 @@ const RESOURCE: ResourceConstruct = {
     },
 
     "common" : {
-      "arrCssFile": [],
+      "arrCssFile": [
+        'vendor-style'
+      ],
       "arrJsFile": []
     },
 
-    "introduction-page" : {
+    "home-page" : {
       "arrCssFile" : [
-        "introduction-page-style"
+        "home-page-style"
       ],
       "arrJsFile" : [
-        "introduction-page"
+        "home-page"
       ]
-    },
-
-    // NOTE component css, js
-    "cooking-loading-page" : {
-      'arrCssFile': [
-        'cooking-loading-page-style',
-      ],
-      'arrJsFile': [
-        'cooking-loading-page',
-      ],
     },
   },
 };
