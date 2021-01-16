@@ -13,6 +13,7 @@
       "@common/config/*": ["app/common/config/*"],
       "@source-data": ["src/data/index"],
       "@src/data/*": ["src/data/*"],
+      "@src/dummy-data/*": ["src/dummy-data/*"],
     },
     "typeRoots": ["./node_modules/@types","./app/common"]
   }
