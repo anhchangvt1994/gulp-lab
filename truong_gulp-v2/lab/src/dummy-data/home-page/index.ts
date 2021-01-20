@@ -1,4 +1,7 @@
 import '@src/dummy-data/data-construct';
+import {
+  BASE_STATIC_URL
+} from '@common/config/resource-config';
 
 interface ProductInterface {
   logo: string,
@@ -8,19 +11,17 @@ interface ProductInterface {
   url: string,
 };
 
-interface ProductListInterface {
-  product_list: Array<ProductInterface>,
-};
-
 interface ResProductListInterface extends ResponseInterface {
-  data: ProductListInterface,
+  data: {
+    product_list: Array<ProductInterface>
+  },
 };
 
 interface HomePageInterface extends LayoutBodyInterface, LayoutHeaderInterface {
   resProductList: ResProductListInterface,
 };
 
-export const objHomePage: HomePageInterface = {
+export const HomePage: HomePageInterface = {
   title: 'gulp lab home page',
   desciption: 'Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)',
   keywords: 'gulp, Nunjucks, Sass, Vue, Javascript',
@@ -31,11 +32,11 @@ export const objHomePage: HomePageInterface = {
     data: {
       product_list: [
         {
-          logo: '',
-          title: '',
-          sub_title: '',
-          desc: '',
-          url: '',
+          logo: BASE_STATIC_URL + 'image/logo/gulp-logo.jpg',
+          title: 'Gulp',
+          sub_title: 'A toolkit to automate & enhance your workflow',
+          desc: 'gulp is an open-source JavaScript toolkit created by Eric Schoffstall used as a streaming build system in front-end web development.',
+          url: 'https://gulpjs.com/',
         }
       ]
     }

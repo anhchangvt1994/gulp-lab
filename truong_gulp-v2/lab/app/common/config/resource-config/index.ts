@@ -1,12 +1,14 @@
 import APP from '@common/enum/source-enum';
 
 interface ResourceItemDataConstruct {
+  'name'?: string,
   "arrCssFile": string[],
   "arrJsFile": string[],
 };
 
 interface ResourceItemConstruct {
   [key:string]: ResourceItemDataConstruct,
+  'home-page': ResourceItemDataConstruct,
 };
 
 interface PathListItemDataConstruct {
@@ -26,7 +28,10 @@ interface ResourceConstruct {
   'resource': ResourceItemConstruct,
 };
 
-const RESOURCE: ResourceConstruct = {
+export let BASE_URL:string;
+export let BASE_STATIC_URL:string;
+
+export const RESOURCE: ResourceConstruct = {
   'project': 'gulp',
   'port': process.env.PORT || 3000,
   'ip_address': null,
@@ -54,6 +59,7 @@ const RESOURCE: ResourceConstruct = {
     },
 
     "home-page" : {
+      'name': 'home-page',
       "arrCssFile" : [
         "home-page-style"
       ],
@@ -82,4 +88,10 @@ if(Ethernet) {
   });
 }
 
-export default RESOURCE;
+if(process.env.NODE_ENV === 'dev') {
+  BASE_URL = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
+  BASE_STATIC_URL = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
+} else if (process.env.NODE_ENV === 'production') {
+  BASE_URL = 'http://' + RESOURCE.host + ':' + RESOURCE.port;
+  BASE_STATIC_URL = 'http://static.' + RESOURCE.host + ':' + RESOURCE.port;
+}

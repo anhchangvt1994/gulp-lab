@@ -1,16 +1,19 @@
+import { forIn as _forIn, isEmpty as _isEmpty } from 'lodash';
+
 import modules from '@common/define/module-define';
 import Dependents from '@common/util/dependent-util';
 import HandlerErrorUtil from '@common/util/hanlder-report-util';
 import APP from '@common/enum/source-enum';
-import RESOURCE from '@common/config/resource-config';
-import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
-import DATA from '@source-data';
+import {
+  RESOURCE,
+  BASE_STATIC_URL
+} from '@common/config/resource-config';
 import EVN_APPLICATION from '@common/define/enviroment-define';
 import { ARR_FILE_EXTENSION } from '@common/define/file-define';
-
 import GenerateRandom from '@common/enum/random-enum';
+import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
 
-import { forIn as _forIn, isEmpty as _isEmpty } from 'lodash';
+import DATA from '@source-data';
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
@@ -21,23 +24,23 @@ const TYPE_FILE_NJK = ARR_FILE_EXTENSION.NJK;
 
 /* -------------------------------------------------------------------------- */
 
-/* ----------------------------- GLOBAL VARIABLE ---------------------------- */
+/* ----------------------------- FILE GLOBAL VARIABLE ----------------------- */
 // NOTE Cứ 10 phút sẽ tự random một version mới để xóa cache
 const generateRandomNumber = new GenerateRandom();
 
 let isFirstCompileAll = true;
 
 // NOTE - Định nghĩa project host
-let strProjectHostUrl = null;
-let strProjectStaticUrl = null;
+// let strProjectHostUrl = null;
+// let strProjectStaticUrl = null;
 
-if(process.env.NODE_ENV === 'dev') {
-  strProjectHostUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
-  strProjectStaticUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
-} else if (process.env.NODE_ENV === 'production') {
-  strProjectHostUrl = 'http://' + RESOURCE.host + ':' + RESOURCE.port;
-  strProjectStaticUrl = 'http://static.' + RESOURCE.host + ':' + RESOURCE.port;
-}
+// if(process.env.NODE_ENV === 'dev') {
+//   strProjectHostUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
+//   strProjectStaticUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
+// } else if (process.env.NODE_ENV === 'production') {
+//   strProjectHostUrl = 'http://' + RESOURCE.host + ':' + RESOURCE.port;
+//   strProjectStaticUrl = 'http://static.' + RESOURCE.host + ':' + RESOURCE.port;
+// }
 
 /* -------------------------------------------------------------------------- */
 
@@ -644,9 +647,9 @@ const _convertNunjuckTmpTask = function() {
               CACHE_VERSION: generateRandomNumber.version,
               EVN_APPLICATION: EVN_APPLICATION.dev,
               LAYOUT_CONFIG: {
-                'imageUrl' : strProjectStaticUrl + '/image', // NOTE - Vì image sử dụng trong layout config cho những file render numjuck sang html thường có dạng '{{ LAYOUT_CONFIG.imageUrl }}/fantasy-image08.jpg' nên để dev tự thêm / sẽ clear hơn khi sử dụng với nunjuck
-                'cssUrl' : strProjectStaticUrl + '/tmp/css/',
-                'jsUrl' : strProjectStaticUrl + '/tmp/js/',
+                'imageUrl' : BASE_STATIC_URL + '/image', // NOTE - Vì image sử dụng trong layout config cho những file render numjuck sang html thường có dạng '{{ LAYOUT_CONFIG.imageUrl }}/fantasy-image08.jpg' nên để dev tự thêm / sẽ clear hơn khi sử dụng với nunjuck
+                'cssUrl' : BASE_STATIC_URL + '/tmp/css/',
+                'jsUrl' : BASE_STATIC_URL + '/tmp/js/',
               }
             }
           }))
@@ -738,9 +741,9 @@ const _convertNunjuckDistTask = function() {
             CACHE_VERSION: generateRandomNumber.version,
             EVN_APPLICATION: EVN_APPLICATION.dev,
             LAYOUT_CONFIG: {
-              'imageUrl' : strProjectStaticUrl + '/image',
-              'cssUrl' : strProjectStaticUrl + '/css/',
-              'jsUrl' : strProjectStaticUrl + '/js/',
+              'imageUrl' : BASE_STATIC_URL + '/image',
+              'cssUrl' : BASE_STATIC_URL + '/css/',
+              'jsUrl' : BASE_STATIC_URL + '/js/',
             }
           }
         }))
