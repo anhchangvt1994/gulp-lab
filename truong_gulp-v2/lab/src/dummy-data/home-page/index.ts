@@ -8,36 +8,44 @@ interface ProductInterface {
   url: string,
 };
 
-interface ProductListInterface {
-  product_list: Array<ProductInterface>,
-};
-
 interface ResProductListInterface extends ResponseInterface {
-  data: ProductListInterface,
+  data: {
+    product_list: Array<ProductInterface>,
+  },
 };
 
 interface HomePageInterface extends LayoutBodyInterface, LayoutHeaderInterface {
   resProductList: ResProductListInterface,
 };
 
-export const objHomePage: HomePageInterface = {
-  title: 'gulp lab home page',
-  desciption: 'Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)',
-  keywords: 'gulp, Nunjucks, Sass, Vue, Javascript',
-  body_class_name: 'home-page',
-  resProductList: {
-    success: true,
-    error: null,
-    data: {
-      product_list: [
-        {
-          logo: '',
-          title: '',
-          sub_title: '',
-          desc: '',
-          url: '',
+class HomePageDummyData extends DummyData {
+  private _objDummyData: HomePageInterface;
+
+  strHostFileName = 'home-page';
+
+  getData() {
+    this._objDummyData = {
+      title: 'gulp lab home page',
+      desciption: 'Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)',
+      keywords: 'gulp, Nunjucks, Sass, Vue, Javascript',
+      body_class_name: 'home-page',
+      resProductList: {
+        success: true,
+        error: null,
+        data: {
+          product_list: [
+            {
+              logo: '',
+              title: '',
+              sub_title: '',
+              desc: '',
+              url: '',
+            }
+          ]
         }
-      ]
-    }
-  }
+      }
+    };
+
+    return this._objDummyData;
+  };
 };
