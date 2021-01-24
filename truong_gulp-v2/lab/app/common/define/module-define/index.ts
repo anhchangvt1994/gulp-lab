@@ -19,6 +19,7 @@ import es = require('event-stream');
 import babel = require('gulp-babel');
 import bebelMinify = require('gulp-babel-minify');
 import gulpBrowserify = require('gulp-browserify');
+import browserify = require('browserify');
 import babelify = require('babelify');
 import vueify = require('vueify');
 import source = require('vinyl-source-stream');
@@ -65,6 +66,7 @@ export default {
   babel,
   bebelMinify,
   gulpBrowserify,
+  browserify,
   babelify,
   vueify,
   source,

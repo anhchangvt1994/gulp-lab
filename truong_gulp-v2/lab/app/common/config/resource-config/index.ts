@@ -4,6 +4,7 @@ interface ResourceItemDataConstruct {
   'name'?: string,
   "arrCssFile": string[],
   "arrJsFile": string[],
+  'dummy_data'?: boolean,
 };
 
 interface ResourceItemConstruct {
@@ -65,7 +66,8 @@ export const RESOURCE: ResourceConstruct = {
       ],
       "arrJsFile" : [
         "home-page"
-      ]
+      ],
+      'dummy_data': true,
     },
   },
 };

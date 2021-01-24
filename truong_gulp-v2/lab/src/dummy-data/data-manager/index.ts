@@ -1,25 +1,18 @@
 import _ from 'lodash';
 import { RESOURCE } from '@common/config/resource-config';
-import {
-
-} from '@src/dummy-data/home-page';
+import HomePageDummyData from '@src/dummy-data/home-page';
 
 class DataManager {
-  private _resource: Object;
+  constructor() {}
 
-  constructor(strFileName?: string) {
-    if() {
+  data(strFileName: string) {
+    const self = this;
 
+    switch(strFileName) {
+      case RESOURCE.resource['home-page'].name:
+        return new HomePageDummyData(strFileName);
     }
-
-    this._resource = RESOURCE.resource;
-  }
-
-  private _isValidFileName(strFileName: string) {
-    if(_.isEmpty(strFileName)) {
-      return false;
-    }
-
-    return true;
-  }; // _checkValidFileName()
+  };
 }
+
+export default DataManager;

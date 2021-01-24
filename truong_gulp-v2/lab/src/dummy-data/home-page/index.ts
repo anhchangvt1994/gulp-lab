@@ -1,6 +1,6 @@
 import '@src/dummy-data/data-construct';
 import {
-  BASE_STATIC_URL
+  RESOURCE
 } from '@common/config/resource-config';
 
 interface ProductInterface {
@@ -13,7 +13,7 @@ interface ProductInterface {
 
 interface ResProductListInterface extends ResponseInterface {
   data: {
-    product_list: Array<ProductInterface>
+    product_list: Array<ProductInterface>,
   },
 };
 
@@ -21,24 +21,63 @@ interface HomePageInterface extends LayoutBodyInterface, LayoutHeaderInterface {
   resProductList: ResProductListInterface,
 };
 
-export const HomePage: HomePageInterface = {
-  title: 'gulp lab home page',
-  desciption: 'Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)',
-  keywords: 'gulp, Nunjucks, Sass, Vue, Javascript',
-  body_class_name: 'home-page',
-  resProductList: {
-    success: true,
-    error: null,
-    data: {
-      product_list: [
-        {
-          logo: BASE_STATIC_URL + 'image/logo/gulp-logo.jpg',
-          title: 'Gulp',
-          sub_title: 'A toolkit to automate & enhance your workflow',
-          desc: 'gulp is an open-source JavaScript toolkit created by Eric Schoffstall used as a streaming build system in front-end web development.',
-          url: 'https://gulpjs.com/',
-        }
-      ]
-    }
+abstract class DummyData {
+  protected _strHostFileName: string;
+  private _strFileName: string;
+
+  constructor(strFileName?: string) {
+    this._strFileName = strFileName;
   }
+
+  protected _isValidFileName() {
+    if(
+      !this._strFileName ||
+      !this._strHostFileName ||
+      this._strFileName !== this._strHostFileName
+    ) {
+      return false;
+    }
+
+    return true;
+  }; // _isValidFileName()
+
+  abstract getData() : any; // getData()
+}; // DummyData
+
+class HomePageDummyData extends DummyData {
+  private _objDummyData: HomePageInterface;
+
+  getData() {
+    this._strHostFileName = RESOURCE.resource['home-page'].name;
+
+    if(!this._isValidFileName()) {
+      return null;
+    }
+
+    this._objDummyData = {
+      title: 'gulp lab home page',
+      desciption: 'Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)',
+      keywords: 'gulp, Nunjucks, Sass, Vue, Javascript',
+      body_class_name: RESOURCE.resource['home-page'].name,
+      resProductList: {
+        success: true,
+        error: null,
+        data: {
+          product_list: [
+            {
+              logo: '',
+              title: '',
+              sub_title: '',
+              desc: '',
+              url: '',
+            }
+          ]
+        }
+      }
+    };
+
+    return this._objDummyData;
+  };
 };
+
+export default HomePageDummyData;

@@ -3,6 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "~jsPath": ["./src/js"],
+      "~jsBasePath": ["./src/js/base'"],
       "~jsPartialPath": ["./src/js/partial'"],
     }
   },

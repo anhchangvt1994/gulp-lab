@@ -13,7 +13,7 @@ import { ARR_FILE_EXTENSION } from '@common/define/file-define';
 import GenerateRandom from '@common/enum/random-enum';
 import { ARR_TMP_CONSTRUCT, generateTmpDirItemConstruct } from '@common/enum/tmp-directory-enum';
 
-import DATA from '@source-data';
+import DataManager from '@src/dummy-data/data-manager';
 /* ----------------------------- DEFINE VARIABLE ---------------------------- */
 // NOTE Các variales dùng để định nghĩa phần cơ bản
 
@@ -435,59 +435,79 @@ const _compileJsTmpTask = function() {
 
       if(filePathData) {
         filePathData.forEach(function(strFilePath) {
-          modules.gulp.src(strFilePath)
-          .pipe(modules.print(
-            filepath => {
-              return modules.ansiColors.yellow(`compile js: ${filepath}`);
-            }
-          ))
-          .pipe(
-            modules.gulpBrowserify(
-            {
-              transform: [
-                [{_flags: {debug: true}}, 'vueify'],
-                modules.babelify.configure({
-                  presets: ["@babel/env"],
-                  plugins: [
-                    ['module-resolver', {
-                      "alias": {
-                        "~jsPath": './src/js',
-                        "~jsPartialPath": './src/js/partial',
-                      }
-                    }]
-                  ]
-                }),
-                'aliasify'
-              ],
-            })
-          )
-          .pipe(modules.rename(function(path) {
-            const filePath = strFilePath.replace(/\\/g, '/');
-
-            const filename = filePath.split('/').slice(-2)[1];
-            const foldername = filePath.split('/').slice(-2)[0];
-
-            path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
-
-            // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
-            if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
-              ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
-                'file-name': path.basename,
-                'file-path': APP.tmp.js + '/' + path.basename,
-              });
-            }
-
-            if(!isFirstCompileAll) {
-              modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
-                if(err) throw err;
-
-                console.log('write file: "tmp-construct-log.json" finish.');
-              });
-            }
-          }))
-          .on('error', function(err) {
-            this.emit('end');
+          // modules.gulp.src(strFilePath)
+          // .pipe(modules.print(
+          //   filepath => {
+          //     return modules.ansiColors.yellow(`compile js: ${filepath}`);
+          //   }
+          // ))
+          // .pipe(
+          //   modules.gulpBrowserify(
+          //   {
+          //     transform: [
+          //       [{_flags: {debug: false}}, modules.vueify],
+          //       modules.babelify.configure({
+          //         presets: ["@babel/env"],
+          //         plugins: [
+          //           ['module-resolver', {
+          //             "alias": {
+          //               "~jsPath": './src/js',
+          //               "~jsBasePath/define": './src/js/base',
+          //               "~jsPartialPath": './src/js/partial',
+          //             }
+          //           }]
+          //         ]
+          //       }),
+          //       'aliasify'
+          //     ],
+          //   })
+          // )
+          modules.browserify({ entries: [strFilePath] }) // path to your entry file here
+          .transform(modules.babelify, {
+            "presets": ["@babel/env"],
+            "plugins": [
+              ['module-resolver', {
+                "root": "./src",
+                "alias": {
+                  "~jsPath": './src/js',
+                  "~jsBasePath": './src/js/base',
+                  "~jsPartialPath": './src/js/partial',
+                }
+              }]
+            ]
           })
+          .transform(modules.vueify)
+          .external('vue') // remove vue from the bundle, if you omit this line whole vue will be bundled with your code
+          .bundle()
+          .pipe(modules.source((foldername!=='js' ? foldername + '.' + TYPE_FILE_JS : filename)))
+          .pipe(modules.buffer())
+          // .pipe(modules.rename(function(path) {
+          //   const filePath = strFilePath.replace(/\\/g, '/');
+
+          //   const filename = filePath.split('/').slice(-2)[1];
+          //   const foldername = filePath.split('/').slice(-2)[0];
+
+          //   path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
+
+          //   // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
+          //   if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
+          //     ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
+          //       'file-name': path.basename,
+          //       'file-path': APP.tmp.js + '/' + path.basename,
+          //     });
+          //   }
+
+          //   if(!isFirstCompileAll) {
+          //     modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+          //       if(err) throw err;
+
+          //       console.log('write file: "tmp-construct-log.json" finish.');
+          //     });
+          //   }
+          // }))
+          // .on('error', function(err) {
+          //   this.emit('end');
+          // })
           .pipe(
             modules.gulp.dest(APP.tmp.js)
           )
@@ -591,10 +611,21 @@ export const compileJsTask = {
 //! ANCHOR - convertNunjuckTask
 //-- convert nunjuck to html into tmp
 const NjkDependents = new Dependents('njk');
+const DummyDataManager = new DataManager();
 
 const _convertNunjuckTmpTask = function() {
   modules.gulp.task('njkTmp', function() {
     let _isError = false;
+
+    const _manageEnviroment = function(env) {
+      env.addFilter('json', function (value, spaces) {
+        if (value instanceof modules.nunjucksRender.nunjucks.runtime.SafeString) {
+          value = value.toString()
+        }
+        const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
+        return modules.nunjucksRender.nunjucks.runtime.markSafe(jsonString)
+      })
+    };
 
     return modules.gulp.src(APP.src.njk + '/**/*.njk')
     .pipe(modules.cached('.njk'))
@@ -640,10 +671,16 @@ const _convertNunjuckTmpTask = function() {
           .pipe(modules.data((file) => {
             const filePath = file.path.replace(/\\/g, '/');
 
+            let data = null;
+
+            if(RESOURCE.resource[foldername]?.dummy_data) {
+              data = DummyDataManager.data(foldername).getData();
+            }
+
             return {
               file: filePath.split('/')[filePath.split('/').length - 2],
               namepage: filePath.split('/')[filePath.split('/').length - 2],
-              data: DATA,
+              data: data,
               CACHE_VERSION: generateRandomNumber.version,
               EVN_APPLICATION: EVN_APPLICATION.dev,
               LAYOUT_CONFIG: {
@@ -658,7 +695,8 @@ const _convertNunjuckTmpTask = function() {
             data: {
               objGlobal: RESOURCE,
               intRandomNumber : Math.random() * 10
-            }
+            },
+            manageEnv: _manageEnviroment,
           }))
           .on('error', function(err) {
             _isError = true;
@@ -737,7 +775,7 @@ const _convertNunjuckDistTask = function() {
           return {
             file: filePath.split('/')[filePath.split('/').length - 2],
             namepage: filePath.split('/')[filePath.split('/').length - 2],
-            data: DATA,
+            // data: DATA,
             CACHE_VERSION: generateRandomNumber.version,
             EVN_APPLICATION: EVN_APPLICATION.dev,
             LAYOUT_CONFIG: {

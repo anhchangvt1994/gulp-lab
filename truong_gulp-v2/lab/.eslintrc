@@ -45,7 +45,8 @@
       "alias": {
         "map": [
           ["~jsPath", "./src/js"],
-          ["~jsPartialPath", "./src/js/partial"]
+          ["~jsPartialPath", "./src/js/partial"],
+          ["~jsBasePath", "./src/js/base"]
         ]
       },
       "extensions": [".js"]
@@ -57,7 +58,8 @@
   },
 
   "parserOptions": {
-    "ecmaVersion": 2017,
-    "sourceType": "module"
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "parser": "babel-eslint"
   }
 }

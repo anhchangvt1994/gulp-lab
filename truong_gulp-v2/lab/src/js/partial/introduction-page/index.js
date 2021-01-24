@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import TheTestComponent from './component/TheTestComponent.vue';
 import test01 from '~jsPartialPath/test-page/_test';
+import '~jsPartialPath/test-page/test/test';
 
 // test
 const test = (() => {

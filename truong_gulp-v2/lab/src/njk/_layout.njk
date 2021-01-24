@@ -1,4 +1,5 @@
 {% set objResource = objGlobal['resource'] %}
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -10,7 +11,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ objGlobal['project'] + '/' + pageHeadTitle }}</title>
+    <title>{{ data.title }}</title>
 
     <!-- global css file (common.css) -->
     {% for cssFile in objResource['common']['arrCssFile'] %}
@@ -27,7 +28,7 @@
       <script src="{{ LAYOUT_CONFIG.jsUrl + jsFile + '.js' + '?v=' + CACHE_VERSION }}"></script>
     {% endfor %}
   </head>
-  <body class='{{ bodyClass }}'>
+  <body class='{{ data.body_class_name }}'>
     <!-- header region -->
     {% block header %}
       {% include "./global/header-section.njk" %}
