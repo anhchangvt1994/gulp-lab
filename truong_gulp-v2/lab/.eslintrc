@@ -49,13 +49,15 @@
           ["~jsBasePath", "./src/js/base"]
         ]
       },
-      "extensions": [".js"]
+      "extensions": [".js", ".vue"]
     }
   },
 
   "globals": {
 		"$": false
   },
+
+  "parser": "vue-eslint-parser",
 
   "parserOptions": {
     "ecmaVersion": 6,

@@ -13,6 +13,23 @@
   "dependencies": {
     "lodash": "^4.17.15"
   },
+  "_moduleAliases": {
+    "@root": ".",
+    "~jsPath": "./src/js",
+    "~jsBasePath": "./src/js/base",
+    "~jsPartialPath": "./src/js/partial"
+  },
+  "aliasify": {
+    "aliases": {
+      "~jsPath": "./src/js",
+      "~jsBasePath": "./src/js/base",
+      "~jsPartialPath": "./src/js/partial",
+      "vue": "vue/dist/vue.js"
+    },
+    "appliesTo": {
+      "includeExtensions": [".js", ".vue"]
+    }
+  },
   "devDependencies": {
     "@babel/core": "^7.8.4",
     "@babel/plugin-proposal-optional-chaining": "^7.12.7",
@@ -63,6 +80,7 @@
     "gulp-ts-path-alias": "^1.0.3",
     "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.8",
+    "module-alias": "^2.2.2",
     "node-notifier": "^7.0.0",
     "ts-node": "^8.10.2",
     "tsconfig-paths": "^3.9.0",
@@ -71,11 +89,7 @@
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
     "vue": "^2.6.12",
+    "vue-eslint-parser": "^7.4.1",
     "vueify": "^9.4.1"
-  },
-  "aliasify": {
-    "aliases": {
-      "vue": "vue/dist/vue.js"
-    }
   }
 }

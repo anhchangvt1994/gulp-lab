@@ -463,20 +463,21 @@ const _compileJsTmpTask = function() {
           //   })
           // )
           modules.browserify({ entries: [strFilePath] }) // path to your entry file here
-          .transform(modules.babelify, {
-            "presets": ["@babel/env"],
-            "plugins": [
-              ['module-resolver', {
-                "root": "./src",
-                "alias": {
-                  "~jsPath": './src/js',
-                  "~jsBasePath": './src/js/base',
-                  "~jsPartialPath": './src/js/partial',
-                }
-              }]
-            ]
-          })
           .transform(modules.vueify)
+          .transform(modules.babelify, {
+            "presets": ["@babel/preset-env"],
+            // "plugins": [
+            //   ['module-resolver', {
+            //     "root": "./src",
+            //     "alias": {
+            //       "~jsPath": './src/js',
+            //       "~jsBasePath": './src/js/base',
+            //       "~jsPartialPath": './src/js/partial',
+            //     }
+            //   }]
+            // ]
+          })
+          .transform("aliasify")
           .external('vue') // remove vue from the bundle, if you omit this line whole vue will be bundled with your code
           .bundle()
           .pipe(modules.source((foldername!=='js' ? foldername + '.' + TYPE_FILE_JS : filename)))
