@@ -443,7 +443,10 @@ const _compileJsTmpTask = function() {
           filename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
           modules.browserify({ entries: [strFilePath] }) // path to your entry file here
-          .transform(modules.vueify)
+          .transform(modules.vueify, {
+            "presets": ["@babel/preset-env"],
+            "plugins": ["@babel/plugin-proposal-optional-chaining"],
+          })
           .transform(modules.babelify, {
             "presets": ["@babel/preset-env"],
           })
@@ -630,8 +633,6 @@ const _convertNunjuckTmpTask = function() {
             }
           ))
           .pipe(modules.data((file) => {
-            const filePath = file.path.replace(/\\/g, '/');
-
             let data = null;
 
             if(RESOURCE.resource[foldername]?.dummy_data) {
@@ -700,8 +701,6 @@ const _convertNunjuckTmpTask = function() {
             }
           }))
           .pipe(modules.gulp.dest(APP.tmp.path))
-          // .pipe(modules.browserSync.reload({ stream: true }));
-          // .pipe(modules.livereload({start: true}));
         });
       }
     }));

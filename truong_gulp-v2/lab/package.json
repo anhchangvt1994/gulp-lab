@@ -13,12 +13,6 @@
   "dependencies": {
     "lodash": "^4.17.15"
   },
-  "_moduleAliases": {
-    "@root": ".",
-    "~jsPath": "./src/js",
-    "~jsBasePath": "./src/js/base",
-    "~jsPartialPath": "./src/js/partial"
-  },
   "aliasify": {
     "aliases": {
       "~jsPath": "./src/js",

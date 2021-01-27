@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import TheHomeSection from './component/TheHomeSection.vue';
+import { PAGE_INFO } from '~jsBasePath/define';
 
 const HomePage = (() => {
   const _renderHomeSection = () => {
@@ -16,6 +17,7 @@ const HomePage = (() => {
 
   return {
     init() {
+      console.log(PAGE_INFO?.resProductList);
       _renderHomeSection();
     }
   };
