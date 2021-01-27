@@ -10,17 +10,16 @@
 </template>
 
 <script>
-// import { PAGE_INFO } from "~jsBasePath/define";
-import test01 from '~jsPartialPath/test-page/_test';
+import { PAGE_INFO } from "~jsBasePath/define";
+
 export default {
   data() {
     return {
-      // PAGE_INFO,
+      PAGE_INFO,
     };
   },
   created() {
-    test01.init();
-    // console.log(this.PAGE_INFO);
+    console.log(this.PAGE_INFO);
   }
 }
 </script>

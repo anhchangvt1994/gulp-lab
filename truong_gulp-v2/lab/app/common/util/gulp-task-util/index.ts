@@ -435,85 +435,51 @@ const _compileJsTmpTask = function() {
 
       if(filePathData) {
         filePathData.forEach(function(strFilePath) {
-          // modules.gulp.src(strFilePath)
-          // .pipe(modules.print(
-          //   filepath => {
-          //     return modules.ansiColors.yellow(`compile js: ${filepath}`);
-          //   }
-          // ))
-          // .pipe(
-          //   modules.gulpBrowserify(
-          //   {
-          //     transform: [
-          //       [{_flags: {debug: false}}, modules.vueify],
-          //       modules.babelify.configure({
-          //         presets: ["@babel/env"],
-          //         plugins: [
-          //           ['module-resolver', {
-          //             "alias": {
-          //               "~jsPath": './src/js',
-          //               "~jsBasePath/define": './src/js/base',
-          //               "~jsPartialPath": './src/js/partial',
-          //             }
-          //           }]
-          //         ]
-          //       }),
-          //       'aliasify'
-          //     ],
-          //   })
-          // )
+          strFilePath = strFilePath.replace(/\\/g, '/');
+
+          let filename = strFilePath.split('/').slice(-2)[1];
+          const foldername = strFilePath.split('/').slice(-2)[0];
+
+          filename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
+
           modules.browserify({ entries: [strFilePath] }) // path to your entry file here
           .transform(modules.vueify)
           .transform(modules.babelify, {
             "presets": ["@babel/preset-env"],
-            // "plugins": [
-            //   ['module-resolver', {
-            //     "root": "./src",
-            //     "alias": {
-            //       "~jsPath": './src/js',
-            //       "~jsBasePath": './src/js/base',
-            //       "~jsPartialPath": './src/js/partial',
-            //     }
-            //   }]
-            // ]
           })
           .transform("aliasify")
           .external('vue') // remove vue from the bundle, if you omit this line whole vue will be bundled with your code
           .bundle()
-          .pipe(modules.source((foldername!=='js' ? foldername + '.' + TYPE_FILE_JS : filename)))
+          .pipe(modules.source(filename + '.' + TYPE_FILE_JS))
+          .pipe(modules.print(
+            filepath => {
+              return modules.ansiColors.yellow(`compile js: ${filepath}`);
+            }
+          ))
+          .pipe(modules.rename(function() {
+            // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
+            if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][filename]) {
+              ARR_TMP_CONSTRUCT[TYPE_FILE_JS][filename] = generateTmpDirItemConstruct({
+                'file-name': filename,
+                'file-path': APP.tmp.js + '/' + filename,
+              });
+            }
+
+            if(!isFirstCompileAll) {
+              modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
+                if(err) throw err;
+
+                console.log('write file: "tmp-construct-log.json" finish.');
+              });
+            }
+          }))
           .pipe(modules.buffer())
-          // .pipe(modules.rename(function(path) {
-          //   const filePath = strFilePath.replace(/\\/g, '/');
-
-          //   const filename = filePath.split('/').slice(-2)[1];
-          //   const foldername = filePath.split('/').slice(-2)[0];
-
-          //   path.basename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
-
-          //   // NOTE Nếu construct JS đối với path file name hiện tại đang rỗng thì nạp vào
-          //   if(!ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename]) {
-          //     ARR_TMP_CONSTRUCT[TYPE_FILE_JS][path.basename] = generateTmpDirItemConstruct({
-          //       'file-name': path.basename,
-          //       'file-path': APP.tmp.js + '/' + path.basename,
-          //     });
-          //   }
-
-          //   if(!isFirstCompileAll) {
-          //     modules.fs.writeFile(APP.src.data + '/tmp-construct-log.json', JSON.stringify(ARR_TMP_CONSTRUCT), (err) => {
-          //       if(err) throw err;
-
-          //       console.log('write file: "tmp-construct-log.json" finish.');
-          //     });
-          //   }
-          // }))
-          // .on('error', function(err) {
-          //   this.emit('end');
-          // })
+          .on('error', function(err) {
+            this.emit('end');
+          })
           .pipe(
             modules.gulp.dest(APP.tmp.js)
           )
-          // .pipe(modules.browserSync.reload({ stream: true }));
-          // .pipe(modules.livereload({start: true}));
         });
       }
     }))
@@ -545,49 +511,39 @@ const _compileJsDistTask = function() {
         }
       );
     } else {
-      return modules.gulp.src(APP.src.js + '/**/*.js')
+      const _JS_COMPILE_FILE_LIST = [
+        APP.src.js + '/vendor.js',
+        APP.src.js + '/**/index.js',
+      ];
+
+      return modules.gulp.src(_JS_COMPILE_FILE_LIST)
       .pipe(modules.tap(function(file) {
         const filePath = file.path.replace(/\\/g, '/');
         // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file js phía tmp
-        const filename = filePath.split('/').slice(-2)[1];
+        let filename = filePath.split('/').slice(-2)[1];
         const foldername = filePath.split('/').slice(-2)[0];
 
-        console.log(filename);
+        filename = (foldername!=='js' ? foldername : filename.replace('.js', ''));
 
-        if(
-          filename === 'index.js' ||
-          foldername === 'js'
-        ) {
-          // NOTE Nếu là file index hoặc file thuộc folder js cấp đầu tiên thì mới thực hiện compile
-          modules.gulp.src(file.path)
-          .pipe(
-            modules.gulpBrowserify(
-            {
-              transform: [
-                [{_flags: {debug: true}}, 'vueify'],
-                modules.babelify.configure({
-                  presets: ["@babel/env"],
-                  plugins: [
-                    ['module-resolver', {
-                      "alias": {
-                        "~jsPath": './src/js',
-                        "~jsPartialPath": './src/js/partial',
-                      }
-                    }]
-                  ]
-                }),
-                'aliasify'
-              ],
-            })
-          )
-          .pipe(modules.rename(
-            foldername!='js' ? foldername + '.js' : filename.replace('.js','') + '.js'
-          ))
-          .pipe(modules.uglify())
-          .pipe(
-            modules.gulp.dest(APP.dist.js)
-          );
-        }
+        modules.browserify({ entries: [filePath] }) // path to your entry file here
+        .transform(modules.vueify)
+        .transform(modules.babelify, {
+          "presets": ["@babel/preset-env"],
+        })
+        .transform("aliasify")
+        .external('vue') // remove vue from the bundle, if you omit this line whole vue will be bundled with your code
+        .bundle()
+        .pipe(modules.source(filename + '.' + TYPE_FILE_JS))
+        .pipe(modules.print(
+          filepath => {
+            return modules.ansiColors.yellow(`compile js: ${filepath}`);
+          }
+        ))
+        .pipe(modules.buffer())
+        .pipe(modules.uglify())
+        .pipe(
+          modules.gulp.dest(APP.dist.js)
+        );
       }))
     }
   });
@@ -659,11 +615,15 @@ const _convertNunjuckTmpTask = function() {
         filePathData &&
         filePathData.length > 0
       ) {
-        filePathData.forEach(function(indexPath) {
-          indexPath = indexPath.replace(/\\/g, '/');
-          const foldername = indexPath.split('/').slice(-2)[0];
+        filePathData.forEach(function(filePath) {
+          filePath = filePath.replace(/\\/g, '/');
 
-          modules.gulp.src(indexPath)
+          let filename = filePath.split('/').slice(-2)[1];
+          const foldername = filePath.split('/').slice(-2)[0];
+
+          filename = (foldername!==TYPE_FILE_NJK ? foldername : filename.replace('.njk', ''));
+
+          modules.gulp.src(filePath)
           .pipe(modules.print(
             filepath => {
               return modules.ansiColors.yellow(`convert njk: ${filepath}`);
@@ -710,7 +670,7 @@ const _convertNunjuckTmpTask = function() {
             this.emit('end');
           })
           .pipe(modules.rename(function(path) {
-            path.basename = foldername;
+            path.basename = filename;
 
             // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
             if(!isFirstCompileAll) {
@@ -760,48 +720,67 @@ const _convertNunjuckTmpTask = function() {
 //-- convert nunjuck to html into dist
 const _convertNunjuckDistTask = function() {
   modules.gulp.task('njkDist', function() {
-    return modules.gulp.src(APP.src.njk + '/**/*.njk')
+    const _manageEnviroment = function(env) {
+      env.addFilter('json', function (value, spaces) {
+        if (value instanceof modules.nunjucksRender.nunjucks.runtime.SafeString) {
+          value = value.toString()
+        }
+        const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
+        return modules.nunjucksRender.nunjucks.runtime.markSafe(jsonString)
+      })
+    };
+
+    const _NJK_COMPILE_FILE_LIST = [
+      APP.src.njk + '/**/index.njk',
+    ];
+
+    return modules.gulp.src(_NJK_COMPILE_FILE_LIST)
     .pipe(modules.tap(function(file) {
       const filePath = file.path.replace(/\\/g, '/');
 
       // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
-      const filename = filePath.split('/').slice(-2)[1];
+      let filename = filePath.split('/').slice(-2)[1];
       const foldername = filePath.split('/').slice(-2)[0];
 
-      if(filename === 'index.njk') {
-        modules.gulp.src(file.path)
-        .pipe(modules.data((file) => {
-          const filePath = file.path.replace(/\\/g, '/');
+      filename = (foldername!==TYPE_FILE_NJK ? foldername : filename.replace('.njk', ''));
 
-          return {
-            file: filePath.split('/')[filePath.split('/').length - 2],
-            namepage: filePath.split('/')[filePath.split('/').length - 2],
-            // data: DATA,
-            CACHE_VERSION: generateRandomNumber.version,
-            EVN_APPLICATION: EVN_APPLICATION.dev,
-            LAYOUT_CONFIG: {
-              'imageUrl' : BASE_STATIC_URL + '/image',
-              'cssUrl' : BASE_STATIC_URL + '/css/',
-              'jsUrl' : BASE_STATIC_URL + '/js/',
-            }
+      modules.gulp.src(filePath)
+      .pipe(modules.data(() => {
+        let data = null;
+
+        if(RESOURCE.resource[foldername]?.dummy_data) {
+          data = DummyDataManager.data(foldername).getData();
+        }
+
+        return {
+          file: filePath.split('/')[filePath.split('/').length - 2],
+          namepage: filePath.split('/')[filePath.split('/').length - 2],
+          data: data,
+          CACHE_VERSION: generateRandomNumber.version,
+          EVN_APPLICATION: EVN_APPLICATION.dev,
+          LAYOUT_CONFIG: {
+            'imageUrl' : BASE_STATIC_URL + '/image',
+            'cssUrl' : BASE_STATIC_URL + '/css/',
+            'jsUrl' : BASE_STATIC_URL + '/js/',
           }
-        }))
-        .pipe(modules.nunjucksRender({
-          ext: '.html',
-          data: {
-            objGlobal: RESOURCE,
-            intRandomNumber : Math.random() * 10
-          }
-        }))
-        .pipe(modules.rename(function(path) {
-            path.basename = foldername;
-          }
-        ))
-        .pipe(modules.print(
-          filepath => `built: ${filepath}`
-        ))
-        .pipe(modules.gulp.dest(APP.dist.path));
-      }
+        }
+      }))
+      .pipe(modules.nunjucksRender({
+        ext: '.html',
+        data: {
+          objGlobal: RESOURCE,
+          intRandomNumber : Math.random() * 10
+        },
+        manageEnv: _manageEnviroment,
+      }))
+      .pipe(modules.rename(function(path) {
+          path.basename = filename;
+        }
+      ))
+      .pipe(modules.print(
+        filepath => `built: ${filepath}`
+      ))
+      .pipe(modules.gulp.dest(APP.dist.path));
     }));
   });
 };
@@ -922,7 +901,7 @@ export const browserSyncTask = {
             "display: none; ",
             "padding: 5px 5px;",
             "position: fixed;",
-            "font-size: 13px;",
+            "font-size: 1.75rem;",
             "line-height: 18px;",
             "z-index: 999999;",
             "left: 0;",
