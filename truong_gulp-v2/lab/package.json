@@ -21,7 +21,10 @@
       "vue": "vue/dist/vue.js"
     },
     "appliesTo": {
-      "includeExtensions": [".js", ".vue"]
+      "includeExtensions": [
+        ".js",
+        ".vue"
+      ]
     }
   },
   "devDependencies": {

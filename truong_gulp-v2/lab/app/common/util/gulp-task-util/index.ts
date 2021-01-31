@@ -445,7 +445,6 @@ const _compileJsTmpTask = function() {
           modules.browserify({ entries: [strFilePath] }) // path to your entry file here
           .transform(modules.vueify, {
             "presets": ["@babel/preset-env"],
-            "plugins": ["@babel/plugin-proposal-optional-chaining"],
           })
           .transform(modules.babelify, {
             "presets": ["@babel/preset-env"],

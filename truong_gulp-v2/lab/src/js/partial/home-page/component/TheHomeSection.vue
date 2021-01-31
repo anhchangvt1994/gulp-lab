@@ -48,29 +48,15 @@ import _ from 'lodash';
 
 export default {
   data() {
-    let resProductListData = null;
-    let resProductList = null;
-
-    if(
-      !_.isEmpty(PAGE_INFO) &&
-      !_.isEmpty(PAGE_INFO.resProductList) &&
-      !_.isEmpty(PAGE_INFO.resProductList.data)
-    ) {
-      resProductListData = PAGE_INFO.resProductList.data;
-    }
-
-    if(!_.isEmpty(resProductListData)) {
-      resProductList = resProductListData.product_list;
-    }
+    const resProductList = this.chaining(PAGE_INFO,'resProductList', 'data', 'product_list') || null;
 
     return {
-      resProductListData,
       resProductList,
     };
   },
 
   created() {
-    console.log(PAGE_INFO?.resProductList);
+    console.log(this.resProductList);
   },
 
   methods: {
