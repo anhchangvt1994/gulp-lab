@@ -15,7 +15,7 @@ const HomePage = (() => {
         let name = rest[key];
         tmp = tmp?.[name];
       }
-      return tmp || "";
+      return tmp || null;
     };
 
     new Vue({

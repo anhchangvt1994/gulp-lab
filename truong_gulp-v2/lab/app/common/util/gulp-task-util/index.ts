@@ -30,18 +30,6 @@ const generateRandomNumber = new GenerateRandom();
 
 let isFirstCompileAll = true;
 
-// NOTE - Định nghĩa project host
-// let strProjectHostUrl = null;
-// let strProjectStaticUrl = null;
-
-// if(process.env.NODE_ENV === 'dev') {
-//   strProjectHostUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
-//   strProjectStaticUrl = 'http://' + RESOURCE.ip_address + ':' + RESOURCE.port;
-// } else if (process.env.NODE_ENV === 'production') {
-//   strProjectHostUrl = 'http://' + RESOURCE.host + ':' + RESOURCE.port;
-//   strProjectStaticUrl = 'http://static.' + RESOURCE.host + ':' + RESOURCE.port;
-// }
-
 /* -------------------------------------------------------------------------- */
 
 /* --------------------------------- METHOD --------------------------------- */
@@ -150,7 +138,6 @@ const _copyImagesTmpTask = function() {
       }
     ))
     // .pipe(modules.browserSync.reload({ stream: true }));
-    // .pipe(modules.livereload({start: true}));
   });
 };
 
@@ -201,7 +188,6 @@ const _copyFontsTask = function(arrTaskConfig: ArrTaskConfigConstruct) {
       }
     ))
     // .pipe(modules.browserSync.reload({ stream: true }));
-    // .pipe(modules.livereload({start: true}));
   });
 };
 
@@ -632,16 +618,29 @@ const _convertNunjuckTmpTask = function() {
             }
           ))
           .pipe(modules.data((file) => {
-            let data = null;
+            let responseData:any = {};
 
             if(RESOURCE.resource[foldername]?.dummy_data) {
-              data = DummyDataManager.data(foldername).getData();
+              responseData = DummyDataManager.get(foldername) || {};
+            }
+
+            if(
+              !_isEmpty(responseData) &&
+              !responseData.ok
+            ) {
+              _isError = true;
+
+              __handlerErrorUtil.handlerError(JSON.stringify(responseData).toString(), TYPE_FILE_NJK, isFirstCompileAll);
+
+              if(!isFirstCompileAll) {
+                __handlerErrorUtil.reportError();
+              }
             }
 
             return {
               file: filePath.split('/')[filePath.split('/').length - 2],
               namepage: filePath.split('/')[filePath.split('/').length - 2],
-              data: data,
+              data: responseData,
               CACHE_VERSION: generateRandomNumber.version,
               EVN_APPLICATION: EVN_APPLICATION.dev,
               LAYOUT_CONFIG: {
@@ -747,7 +746,7 @@ const _convertNunjuckDistTask = function() {
         let data = null;
 
         if(RESOURCE.resource[foldername]?.dummy_data) {
-          data = DummyDataManager.data(foldername).getData();
+          data = DummyDataManager.get(foldername);
         }
 
         return {
@@ -829,6 +828,89 @@ export const prettierHtmlTask = {
   'dist': {
     'name': 'prettierHtmlDist',
     'init': _prettierHtmlDistTask,
+  },
+};
+
+//! ANCHOR - initDummyData
+const _dummyData = function() {
+  modules.gulp.task('dummyData', function() {
+    const _manageEnviroment = function(env) {
+      env.addFilter('json', function (value, spaces) {
+        if (value instanceof modules.nunjucksRender.nunjucks.runtime.SafeString) {
+          value = value.toString()
+        }
+        const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
+        return modules.nunjucksRender.nunjucks.runtime.markSafe(jsonString)
+      })
+    };
+
+    const _DUMMY_FILE_PATH = [
+      APP.src.dummy_data + '/data-store/*.json'
+    ];
+
+    return modules.gulp.src(_DUMMY_FILE_PATH)
+    .pipe(modules.cached('.json'))
+    .pipe(modules.tap(function(file) {
+      if(isFirstCompileAll) {
+        return;
+      }
+
+      let filePath = file.path.replace(/\\/g, '/');
+
+      // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
+      const filename = filePath.split('/').slice(-2)[1].replace('.json','');
+
+      filePath = APP.src.njk + '/' + filename + '/index.' + TYPE_FILE_NJK;
+
+      modules.gulp.src(filePath)
+      .pipe(modules.print(
+        filepath => {
+          return modules.ansiColors.yellow(`convert njk: ${filepath}`);
+        }
+      ))
+      .pipe(modules.data(() => {
+        let data = null;
+
+        if(RESOURCE.resource[filename]?.dummy_data) {
+          data = DummyDataManager.get(filename);
+        }
+
+        return {
+          file: filePath.split('/')[filePath.split('/').length - 2],
+          namepage: filePath.split('/')[filePath.split('/').length - 2],
+          data: data,
+          CACHE_VERSION: generateRandomNumber.version,
+          EVN_APPLICATION: EVN_APPLICATION.dev,
+          LAYOUT_CONFIG: {
+            'imageUrl' : BASE_STATIC_URL + '/image', // NOTE - Vì image sử dụng trong layout config cho những file render numjuck sang html thường có dạng '{{ LAYOUT_CONFIG.imageUrl }}/fantasy-image08.jpg' nên để dev tự thêm / sẽ clear hơn khi sử dụng với nunjuck
+            'cssUrl' : BASE_STATIC_URL + '/tmp/css/',
+            'jsUrl' : BASE_STATIC_URL + '/tmp/js/',
+          }
+        }
+      }))
+      .pipe(modules.nunjucksRender({
+        ext: '.html',
+        data: {
+          objGlobal: RESOURCE,
+          intRandomNumber : Math.random() * 10
+        },
+        manageEnv: _manageEnviroment,
+      }))
+      .on('error', function(err) {
+        this.emit('end');
+      })
+      .pipe(modules.rename(function(path) {
+        path.basename = filename;
+      }))
+      .pipe(modules.gulp.dest(APP.tmp.path))
+    }));
+  })
+};
+
+export const dummyData = {
+  'tmp': {
+    'name': 'dummyData',
+    'init': _dummyData,
   },
 };
 

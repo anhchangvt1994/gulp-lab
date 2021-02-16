@@ -8,16 +8,13 @@ import dartSass = require('gulp-dart-sass');
 //-- sub dependencies
 import plumber = require('gulp-plumber');
 import cached = require('gulp-cached');
-import changed = require('gulp-changed');
 import ansiColors = require('ansi-colors');
 import dependents = require('gulp-dependents');
 import print = require('gulp-print');
 import browserSync = require('browser-sync');
 import prettier = require('gulp-prettier');
 import tap = require('gulp-tap');
-import es = require('event-stream');
 import babel = require('gulp-babel');
-import bebelMinify = require('gulp-babel-minify');
 import gulpBrowserify = require('gulp-browserify');
 import browserify = require('browserify');
 import babelify = require('babelify');
@@ -29,21 +26,13 @@ import uglify = require('gulp-uglify');
 import cleanCss = require('gulp-clean-css');
 import data = require('gulp-data');
 import nunjucksRender = require('gulp-nunjucks-render');
-import gulpNunjucks = require('gulp-nunjucks');
 import del = require('del');
 import path = require('path');
-import emptyDir = require('empty-dir');
 import fs = require('fs');
 import imageMin = require('gulp-imagemin');
 import sassVars = require('gulp-sass-variables');
-import tsPathAlias = require('gulp-ts-path-alias');
-import notify = require('gulp-notify');
-import notifier = require('node-notifier');
-import notifierToaster = require('node-notifier/notifiers/toaster');
-import util = require('gulp-util');
 import eslint = require('gulp-eslint');
-import livereload = require('gulp-livereload');
-import gap = require('gulp-append-prepend');
+import util = require('gulp-util');
 
 export default {
   gulp,
@@ -56,15 +45,12 @@ export default {
   plumber,
   ansiColors,
   cached,
-  changed,
   dependents,
   print: print.default,
   browserSync: browserSync.create(),
   prettier,
   tap,
-  es,
   babel,
-  bebelMinify,
   gulpBrowserify,
   browserify,
   babelify,
@@ -76,20 +62,12 @@ export default {
   cleanCss,
   data,
   nunjucksRender,
-  gulpNunjucks,
   del,
   path,
-  emptyDir,
   fs,
   imageMin,
   sassVars,
-  tsPathAlias,
-  notify,
-  notifierToaster,
-  notifier,
-  util,
   uuidv4,
   eslint,
-  livereload,
-  gap,
+  util,
 }

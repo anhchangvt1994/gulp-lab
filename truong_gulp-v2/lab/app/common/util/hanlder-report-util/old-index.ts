@@ -22,6 +22,7 @@ class HandlerReportUtil {
     extFileName: string,
     isFirstCompileAll?: boolean
   ) {
+    console.log('===============================================================');
     const self = this;
 
     let intLineNumber = null;

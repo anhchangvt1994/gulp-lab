@@ -1,5 +1,5 @@
 const _DIR_PATH = __dirname.replace(/\\/g, '/');
-const _LAB_PATH = _DIR_PATH.split('/app')[0]
+const _LAB_PATH = _DIR_PATH.split('/app')[0];
 
 const _APP_LAB_PATH: string = _LAB_PATH + '/'; // url của lab directory
 
@@ -18,6 +18,7 @@ interface AppItemConstruct {
   font: string,
   njk?: string,
   data?: string,
+  dummy_data?: string,
   urlConfig?: string,
 };
 
@@ -40,6 +41,7 @@ const APP: AppConstruct = {
     font : _APP_LAB_PATH + 'font',
     njk : _APP_SRC_PATH + 'njk',
     data : _APP_SRC_PATH + 'data',
+    dummy_data: _APP_SRC_PATH + 'dummy-data',
     urlConfig : _APP_SRC_PATH + 'urlConfig',
   },
 

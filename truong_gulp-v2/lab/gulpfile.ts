@@ -1,5 +1,5 @@
 import 'tsconfig-paths/register';
-import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssTmpTask, compileJsTask, convertNunjuckTask, prettierHtmlTask, doAfterBuildTask } from '@common/util/gulp-task-util';
+import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssTmpTask, compileJsTask, convertNunjuckTask, prettierHtmlTask, dummyData, doAfterBuildTask } from '@common/util/gulp-task-util';
 import { watchTask } from '@common/util/watch-task-util';
 import gulp = require('gulp');
 
@@ -33,9 +33,6 @@ compileJsTask.endTmp.init();
 compileJsTask.dist.init();
 
 //! ANCHOR - copyFontsTask
-//-- copy fonts to tmp
-copyFontsTask.tmp.init();
-
 //-- copy fonts to dist
 copyFontsTask.dist.init();
 
@@ -50,13 +47,14 @@ convertNunjuckTask.dist.init();
 //-- prettier html tmp
 prettierHtmlTask.tmp.init();
 
+//! ANCHOR - dummyData
+//-- init dummy data
+dummyData.tmp.init();
+
 //-- prettier html dist
 prettierHtmlTask.dist.init();
 
 //! ANCHOR - copyImagesTask
-//-- copy images to tmp
-copyImagesTask.tmp.init();
-
 //-- copy images to dist
 copyImagesTask.dist.init();
 
@@ -82,16 +80,18 @@ gulp.task('dev:template', gulp.series(
   cleanTask.tmp.name,
   gulp.parallel(
     convertSassTask.tmp.name,
-    // copyFontsTask.tmp.name,
 
     gulp.series(
       compileJsTask.tmp.name,
       compileJsTask.endTmp.name,
     ),
-
-    // copyImagesTask.tmp.name,
   ),
-  convertNunjuckTask.tmp.name,
+
+  gulp.series(
+    dummyData.tmp.name,
+    convertNunjuckTask.tmp.name,
+  ),
+
   convertNunjuckTask.endTmp.name,
   doAfterBuildTask.name,
   gulp.parallel(
@@ -105,14 +105,11 @@ gulp.task('dev', gulp.series(
   cleanTask.tmp.name,
   gulp.parallel(
     convertSassTask.tmp.name,
-    // copyFontsTask.tmp.name,
 
     gulp.series(
       compileJsTask.tmp.name,
       compileJsTask.endTmp.name,
     ),
-
-    // copyImagesTask.tmp.name,
   ),
 
   doAfterBuildTask.name,

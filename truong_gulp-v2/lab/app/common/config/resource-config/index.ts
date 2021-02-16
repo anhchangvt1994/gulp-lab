@@ -10,6 +10,7 @@ interface ResourceItemDataConstruct {
 interface ResourceItemConstruct {
   [key:string]: ResourceItemDataConstruct,
   'home-page': ResourceItemDataConstruct,
+  'introduction-page': ResourceItemDataConstruct,
 };
 
 interface PathListItemDataConstruct {
@@ -66,6 +67,17 @@ export const RESOURCE: ResourceConstruct = {
       ],
       "arrJsFile" : [
         "home-page"
+      ],
+      'dummy_data': true,
+    },
+
+    "introduction-page" : {
+      'name': 'introduction-page',
+      "arrCssFile" : [
+        "introduction-page-style"
+      ],
+      "arrJsFile" : [
+        "introduction-page"
       ],
       'dummy_data': true,
     },

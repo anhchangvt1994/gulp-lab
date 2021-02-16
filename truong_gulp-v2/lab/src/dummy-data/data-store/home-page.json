@@ -1,0 +1,21 @@
+{
+  "title": 876876,
+  "desciption": "Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)",
+  "keywords": "gulp, Nunjucks, Sass, Vue, Javascript",
+  "body_class_name": "home-page",
+  "response": {
+    "success": false,
+    "error": null,
+    "data": {
+      "product_list": [
+        {
+          "logo": "gulp-logo.jpg",
+          "title": "Gulp!",
+          "sub_title": "A toolkit to automate & enhance your workflow",
+          "desc": "Leverage gulp and the flexibility of JavaScript to automate slow, repetitive workflows and compose them into efficient build pipelines.",
+          "url": "https://gulpjs.com"
+        }
+      ]
+    }
+  }
+}

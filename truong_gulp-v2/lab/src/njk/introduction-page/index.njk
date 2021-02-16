@@ -2,6 +2,7 @@
 
 {% set bodyClass = 'introductionPage' %}
 {% set pageHeadTitle = 'introduction' %}
+{% set resProductList = data.response %}
 
 <!-- ===============Body=============== -->
 
@@ -9,4 +10,10 @@
 
 {% block body %}
   {% include objGlobal.path.njk + "/introduction-page/_introduction-section.njk" %}
+
+  <script>
+    window.PAGE_INFO = {};
+
+    window.PAGE_INFO.resProductList = {{ resProductList | json }};
+  </script>
 {% endblock %}

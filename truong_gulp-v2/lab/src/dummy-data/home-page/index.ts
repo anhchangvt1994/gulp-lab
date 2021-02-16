@@ -1,6 +1,7 @@
-import '@src/dummy-data/data-construct';
+import * as DataConstruct from '@src/dummy-data/data-construct';
 import {
-  RESOURCE
+  RESOURCE,
+  BASE_STATIC_URL
 } from '@common/config/resource-config';
 
 interface ProductInterface {
@@ -11,40 +12,17 @@ interface ProductInterface {
   url: string,
 };
 
-interface ResProductListInterface extends ResponseInterface {
+interface ResProductListInterface extends DataConstruct.ResponseInterface {
   data: {
     product_list: Array<ProductInterface>,
   },
 };
 
-interface HomePageInterface extends LayoutBodyInterface, LayoutHeaderInterface {
+interface HomePageInterface extends DataConstruct.LayoutBodyInterface, DataConstruct.LayoutHeaderInterface {
   resProductList: ResProductListInterface,
 };
 
-abstract class DummyData {
-  protected _strHostFileName: string;
-  private _strFileName: string;
-
-  constructor(strFileName?: string) {
-    this._strFileName = strFileName;
-  }
-
-  protected _isValidFileName() {
-    if(
-      !this._strFileName ||
-      !this._strHostFileName ||
-      this._strFileName !== this._strHostFileName
-    ) {
-      return false;
-    }
-
-    return true;
-  }; // _isValidFileName()
-
-  abstract getData() : any; // getData()
-}; // DummyData
-
-class HomePageDummyData extends DummyData {
+class HomePageDummyData extends DataConstruct.DummyData {
   private _objDummyData: HomePageInterface;
 
   getData() {
@@ -60,16 +38,16 @@ class HomePageDummyData extends DummyData {
       keywords: 'gulp, Nunjucks, Sass, Vue, Javascript',
       body_class_name: RESOURCE.resource['home-page'].name,
       resProductList: {
-        success: true,
+        success: false,
         error: null,
         data: {
           product_list: [
             {
-              logo: '',
-              title: '',
-              sub_title: '',
-              desc: '',
-              url: '',
+              logo: BASE_STATIC_URL + '/image/logo/gulp-logo.jpg',
+              title: 'test',
+              sub_title: 'A toolkit to automate & enhance your workflow',
+              desc: 'Leverage gulp and the flexibility of JavaScript to automate slow, repetitive workflows and compose them into efficient build pipelines.',
+              url: 'https://gulpjs.com',
             }
           ]
         }

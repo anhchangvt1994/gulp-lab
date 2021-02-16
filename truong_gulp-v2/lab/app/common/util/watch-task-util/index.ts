@@ -1,5 +1,5 @@
 import APP from '@common/enum/source-enum';
-import { convertSassTask, copyImagesTask, copyFontsTask, compileJsTask, convertNunjuckTask, browserSyncReloadTask } from '@common/util/gulp-task-util';
+import { convertSassTask, copyImagesTask, copyFontsTask, compileJsTask, convertNunjuckTask, dummyData, browserSyncReloadTask } from '@common/util/gulp-task-util';
 import gulp = require('gulp');
 import del = require('del');
 import path = require('path');
@@ -153,6 +153,14 @@ export const watchNunjuckTask = {
   'init': _watchNunjuckTask,
 };
 
+//! ANCHOR - watchDummyData
+const _watchDummyData = function() {
+  gulp.watch(APP.src.dummy_data + '/data-store/*.json', gulp.series(
+    dummyData.tmp.name,
+    browserSyncReloadTask.name,
+  ))
+};
+
 //! ANCHOR  - watchImagesTask
 //-- watch image files change task
 const _watchImagesTask = function() {
@@ -177,6 +185,7 @@ const _watchTmpWithTemplateTask = function() {
     // _watchFontsTask();
     _watchJsTask();
     _watchNunjuckTask();
+    _watchDummyData();
     // _watchImagesTask();
   });
 };
