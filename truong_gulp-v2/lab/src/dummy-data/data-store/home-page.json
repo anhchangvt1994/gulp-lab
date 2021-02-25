@@ -1,11 +1,12 @@
 {
-  "title": 876876,
+  "id": "home-page",
+  "title": "home page",
   "desciption": "Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)",
   "keywords": "gulp, Nunjucks, Sass, Vue, Javascript",
   "body_class_name": "home-page",
   "response": {
     "success": false,
-    "error": null,
+    "error": {},
     "data": {
       "product_list": [
         {

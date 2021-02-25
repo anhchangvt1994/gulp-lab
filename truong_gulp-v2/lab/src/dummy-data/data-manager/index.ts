@@ -1,5 +1,5 @@
 import _ = require('lodash');
-import {Decoder, object, string, optional, number, boolean, isDecoderError} from '@mojotech/json-type-validation';
+import {Decoder, object, string, optional, number, boolean, anyJson, isDecoderError} from '@mojotech/json-type-validation';
 import APP from '@common/enum/source-enum';
 import { RESOURCE } from '@common/config/resource-config';
 import modules from '@common/define/module-define';
@@ -9,12 +9,13 @@ interface RequestUrlInterface {
   [key:string]: string,
 };
 
-interface DataDummyInterface extends LayoutBodyInterface, LayoutHeaderInterface {
+interface DataDummyInterface extends DummyDataInfoInterface ,LayoutBodyInterface, LayoutHeaderInterface {
   response: ResponseInterface,
 };
 
 const DataDummyDecoder: Decoder<DataDummyInterface> = object(
   {
+    id: string(),
     title: string(),
     keywords: string(),
     desciption: string(),
@@ -57,6 +58,7 @@ class DataManager {
     try {
       const jsonContent = modules.fs.readFileSync(strDataJsonFileUrl, 'utf-8');
       data = DataDummyDecoder.run(JSON.parse(jsonContent));
+      console.log(typeof JSON.parse(jsonContent).response);
     } catch(err) {
       console.log(err)
       return;

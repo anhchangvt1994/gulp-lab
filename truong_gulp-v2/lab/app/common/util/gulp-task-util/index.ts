@@ -624,6 +624,8 @@ const _convertNunjuckTmpTask = function() {
               responseData = DummyDataManager.get(foldername) || {};
             }
 
+            console.log(responseData);
+
             if(
               !_isEmpty(responseData) &&
               !responseData.ok
