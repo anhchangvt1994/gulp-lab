@@ -21,6 +21,7 @@ const TYPE_FILE_JS = ARR_FILE_EXTENSION.JS;
 const TYPE_FILE_CSS = ARR_FILE_EXTENSION.CSS;
 const TYPE_FILE_HTML = ARR_FILE_EXTENSION.HTML;
 const TYPE_FILE_NJK = ARR_FILE_EXTENSION.NJK;
+const TYPE_FILE_JSON = ARR_FILE_EXTENSION.JSON;
 
 /* -------------------------------------------------------------------------- */
 
@@ -624,20 +625,20 @@ const _convertNunjuckTmpTask = function() {
               responseData = DummyDataManager.get(foldername) || {};
             }
 
-            console.log(responseData);
-
             if(
               !_isEmpty(responseData) &&
-              !responseData.ok
+              !responseData.success
             ) {
               _isError = true;
 
-              __handlerErrorUtil.handlerError(JSON.stringify(responseData).toString(), TYPE_FILE_NJK, isFirstCompileAll);
+              __handlerErrorUtil.handlerError(responseData, TYPE_FILE_JSON, isFirstCompileAll);
 
               if(!isFirstCompileAll) {
                 __handlerErrorUtil.reportError();
               }
             }
+
+            responseData = (_isError ? {} : responseData.data);
 
             return {
               file: filePath.split('/')[filePath.split('/').length - 2],

@@ -16,6 +16,7 @@ class HandlerErrorUtil {
     [ARR_FILE_EXTENSION.CSS] : '',
     [ARR_FILE_EXTENSION.NJK] : {},
     [ARR_FILE_EXTENSION.JS] : {},
+    [ARR_FILE_EXTENSION.JSON] : {},
   };
 
   constructor() {}
@@ -110,6 +111,7 @@ class HandlerErrorUtil {
       const _strCssError = self.arrError[ARR_FILE_EXTENSION.CSS];
       const _arrNjkErrorItemList = self.arrError[ARR_FILE_EXTENSION.NJK];
       const _arrJsErrorItemList = self.arrError[ARR_FILE_EXTENSION.JS];
+      const _arrJsonErrorItemList = self.arrError[ARR_FILE_EXTENSION.JSON];
 
       if(!_isEmpty(_strCssError)) {
         console.log(_strCssError);
@@ -128,6 +130,15 @@ class HandlerErrorUtil {
         for(const strErrKey in _arrJsErrorItemList) {
           if(_arrJsErrorItemList[strErrKey]) {
             console.log(_arrJsErrorItemList[strErrKey]);
+            break;
+          }
+        }
+      }
+
+      if(!_isEmpty(_arrJsonErrorItemList)) {
+        for(const strErrKey in _arrJsonErrorItemList) {
+          if(_arrJsonErrorItemList[strErrKey]) {
+            console.log(_arrJsonErrorItemList[strErrKey]);
             break;
           }
         }

@@ -15,6 +15,7 @@ interface ResourceItemConstruct {
 
 interface PathListItemDataConstruct {
   'src': string,
+  'dummy_data': string,
   'njk': string,
   'global': string,
   'layout': string,
@@ -42,6 +43,7 @@ export const RESOURCE: ResourceConstruct = {
 
   'path': {
     'src': APP.src.path,
+    'dummy_data': APP.src.dummy_data,
     'njk': APP.src.njk,
     'global': APP.src.njk + '/global',
     'layout': APP.src.njk + '/_layout.njk',

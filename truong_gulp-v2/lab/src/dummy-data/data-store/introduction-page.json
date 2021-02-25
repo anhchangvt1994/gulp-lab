@@ -1,11 +1,12 @@
 {
+  "id": "introduction-page",
   "title": "Gulp lab home page",
   "desciption": "Design pattern for FE developer use (Nunjucks, Sass, Vue and Javascript)",
   "keywords": "gulp, Nunjucks, Sass, Vue, Javascript",
   "body_class_name": "introduction-page",
   "response": {
     "success": true,
-    "error": null,
+    "error": {},
     "data": {
       "product_list": [
         {
