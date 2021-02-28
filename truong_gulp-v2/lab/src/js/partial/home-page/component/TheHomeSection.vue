@@ -14,7 +14,7 @@
               <div class="home-block__product-wrap__item__head">
                 <div class="home-block__product-wrap__item__logo-col">
                   <img
-                    :src="productItem.logo"
+                    :src="imageUrl + productItem.logo"
                     :alt="productItem.title"
                     class="home-block__product-wrap__item__logo-img"
                   >
@@ -49,9 +49,11 @@ import _ from 'lodash';
 export default {
   data() {
     const resProductList = this.chaining(PAGE_INFO,'resProductList', 'data', 'product_list') || null;
+    const imageUrl = this.chaining(PAGE_INFO,'image_url') || '';
 
     return {
       resProductList,
+      imageUrl,
     };
   },
 

@@ -61,7 +61,14 @@ class DataManager {
     const self = this;
     const error = (jsonContent.ok ? null : jsonContent.error);
     const data = (error ? error.input : jsonContent.result);
-    const message = (error ? error.message : '');
+    let message = (error ? error.message : null);
+
+    if(
+      message &&
+      message.indexOf('expected') !== -1
+    ) {
+      message = error.at + ' | ' + message;
+    }
 
     const DummyDataResponse: DataDummyResponseInterface = {
       success: jsonContent.ok,

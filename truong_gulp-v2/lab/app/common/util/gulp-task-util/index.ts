@@ -1,4 +1,4 @@
-import { forIn as _forIn, isEmpty as _isEmpty } from 'lodash';
+import { forIn as _forIn, isEmpty as _isEmpty, isObject as _isObject } from 'lodash';
 
 import modules from '@common/define/module-define';
 import Dependents from '@common/util/dependent-util';
@@ -563,13 +563,14 @@ const _convertNunjuckTmpTask = function() {
   modules.gulp.task('njkTmp', function() {
     let _isError = false;
 
+    // NOTE - Define enviroment method for nunjucks render
     const _manageEnviroment = function(env) {
       env.addFilter('json', function (value, spaces) {
         if (value instanceof modules.nunjucksRender.nunjucks.runtime.SafeString) {
-          value = value.toString()
+          value = value.toString();
         }
-        const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
-        return modules.nunjucksRender.nunjucks.runtime.markSafe(jsonString)
+        const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c');
+        return modules.nunjucksRender.nunjucks.runtime.markSafe(jsonString);
       })
     };
 
@@ -636,6 +637,8 @@ const _convertNunjuckTmpTask = function() {
               if(!isFirstCompileAll) {
                 __handlerErrorUtil.reportError();
               }
+            } else {
+              __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_JSON, foldername + '.' + TYPE_FILE_JSON);
             }
 
             responseData = (_isError ? {} : responseData.data);
@@ -746,16 +749,18 @@ const _convertNunjuckDistTask = function() {
 
       modules.gulp.src(filePath)
       .pipe(modules.data(() => {
-        let data = null;
+        let responseData:any = {};
 
         if(RESOURCE.resource[foldername]?.dummy_data) {
-          data = DummyDataManager.get(foldername);
+          responseData = DummyDataManager.get(foldername) || {};
         }
+
+        responseData = (!responseData.success ? {} : responseData.data);
 
         return {
           file: filePath.split('/')[filePath.split('/').length - 2],
           namepage: filePath.split('/')[filePath.split('/').length - 2],
-          data: data,
+          data: responseData,
           CACHE_VERSION: generateRandomNumber.version,
           EVN_APPLICATION: EVN_APPLICATION.dev,
           LAYOUT_CONFIG: {
@@ -837,13 +842,16 @@ export const prettierHtmlTask = {
 //! ANCHOR - initDummyData
 const _dummyData = function() {
   modules.gulp.task('dummyData', function() {
+    let _isError = false;
+
+    // NOTE - Define enviroment method for nunjucks render
     const _manageEnviroment = function(env) {
       env.addFilter('json', function (value, spaces) {
         if (value instanceof modules.nunjucksRender.nunjucks.runtime.SafeString) {
-          value = value.toString()
+          value = value.toString();
         }
-        const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
-        return modules.nunjucksRender.nunjucks.runtime.markSafe(jsonString)
+        const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c');
+        return modules.nunjucksRender.nunjucks.runtime.markSafe(jsonString);
       })
     };
 
@@ -872,16 +880,34 @@ const _dummyData = function() {
         }
       ))
       .pipe(modules.data(() => {
-        let data = null;
+        let responseData:any = {};
 
         if(RESOURCE.resource[filename]?.dummy_data) {
-          data = DummyDataManager.get(filename);
+          responseData = DummyDataManager.get(filename) || {};
         }
+
+        if(
+          !_isEmpty(responseData) &&
+          !responseData.success
+        ) {
+          _isError = true;
+
+          __handlerErrorUtil.handlerError(responseData, TYPE_FILE_JSON, isFirstCompileAll);
+
+          if(!isFirstCompileAll) {
+            __handlerErrorUtil.reportError();
+          }
+        } else {
+          console.log(filePath + '.' + TYPE_FILE_JSON);
+          __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_JSON, filename + '.' + TYPE_FILE_JSON);
+        }
+
+        responseData = (_isError ? {} : responseData.data);
 
         return {
           file: filePath.split('/')[filePath.split('/').length - 2],
           namepage: filePath.split('/')[filePath.split('/').length - 2],
-          data: data,
+          data: responseData,
           CACHE_VERSION: generateRandomNumber.version,
           EVN_APPLICATION: EVN_APPLICATION.dev,
           LAYOUT_CONFIG: {
@@ -904,6 +930,17 @@ const _dummyData = function() {
       })
       .pipe(modules.rename(function(path) {
         path.basename = filename;
+
+        // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
+        if(!isFirstCompileAll) {
+          const strErrKey = path.basename + '.' + TYPE_FILE_NJK;
+          // NOTE - Sau lần build đầu tiên sẽ tiến hành checkUpdateError
+          __handlerErrorUtil.checkClearError(_isError, TYPE_FILE_NJK, strErrKey);
+          __handlerErrorUtil.reportError();
+          __handlerErrorUtil.notifSuccess();
+
+          _isError = false;
+        }
       }))
       .pipe(modules.gulp.dest(APP.tmp.path))
     }));

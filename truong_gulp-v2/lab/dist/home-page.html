@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>gulp lab home page</title>
+    <title>home page</title>
 
     <!-- global css file (common.css) -->
 
@@ -66,14 +66,22 @@
       window.PAGE_INFO = {};
 
       window.PAGE_INFO.resProductList = {
-        success: true,
-        error: null,
+        success: false,
+        error: {},
         data: {
           product_list: [
-            { logo: '', title: '', sub_title: '', desc: '', url: '' }
+            {
+              logo: 'gulp-logo.jpg',
+              title: 'Gulp!',
+              sub_title: 'A toolkit to automate & enhance your workflow',
+              desc:
+                'Leverage gulp and the flexibility of JavaScript to automate slow, repetitive workflows and compose them into efficient build pipelines.',
+              url: 'https://gulpjs.com'
+            }
           ]
         }
       };
+      window.PAGE_INFO.image_url = 'http://static.dev.vn:3000/image/';
     </script>
 
     <!-- #end body region -->
@@ -100,5 +108,27 @@
     <script src="http://static.dev.vn:3000/js/home-page.js?v=270369"></script>
 
     <!-- other js file -->
+
+    <script>
+      window.PAGE_INFO = {};
+
+      window.PAGE_INFO.resProductList = {
+        success: false,
+        error: {},
+        data: {
+          product_list: [
+            {
+              logo: 'gulp-logo.jpg',
+              title: 'Gulp!',
+              sub_title: 'A toolkit to automate & enhance your workflow',
+              desc:
+                'Leverage gulp and the flexibility of JavaScript to automate slow, repetitive workflows and compose them into efficient build pipelines.',
+              url: 'https://gulpjs.com'
+            }
+          ]
+        }
+      };
+      window.PAGE_INFO.image_url = 'http://static.dev.vn:3000/image/';
+    </script>
   </body>
 </html>

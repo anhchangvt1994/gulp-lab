@@ -25,16 +25,23 @@ time, mark, audio, video {
 body {
   line-height: var.$line-height-default;
   font-size: var.$font-size-default;
-  min-width: grid.$break-point-xxl;
+  width: 100%;
   overflow: hidden;
+  line-height: 1.5;
+
+  @media screen and (min-width: grid.$break-point-lg) {
+    width: auto;
+    min-width: grid.$break-point-xl;
+  }
+
+  @media screen and (min-width: grid.$break-point-xl) {
+    min-width: grid.$break-point-xxl;
+  }
 }
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
 	display: block;
-}
-body {
-	line-height: 1;
 }
 ol, ul {
 	list-style: none;

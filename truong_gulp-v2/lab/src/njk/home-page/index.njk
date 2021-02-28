@@ -1,4 +1,4 @@
-{% extends  objGlobal.path.njk + '/_layout.njk' %}
+{% extends objGlobal.path.njk + '/_layout.njk' %}
 
 {% set resProductList = data.response %}
 
@@ -9,9 +9,12 @@
 {% block body %}
   {% include objGlobal.path.njk + "/home-page/_home-section.njk" %}
 
-  <script>
-    window.PAGE_INFO = {};
+  {% block script %}
+    <script>
+      window.PAGE_INFO = {};
 
-    window.PAGE_INFO.resProductList = {{ resProductList | json }};
-  </script>
+      window.PAGE_INFO.resProductList = {{ resProductList | json }};
+      window.PAGE_INFO.image_url = "{{ LAYOUT_CONFIG.imageUrl }}/";
+    </script>
+  {% endblock %}
 {% endblock %}

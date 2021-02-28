@@ -2,7 +2,6 @@
 @use 'lib/grid/function/grid' as grid-function;
 
 .container {
-  width: 100%;
   max-width: 640px;
   padding: 0 grid-function.get-space-from-base(2);
   margin: 0 auto;
