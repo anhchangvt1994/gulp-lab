@@ -1,121 +1,146 @@
 import 'tsconfig-paths/register';
-import { cleanTask, convertSassTask, copyImagesTask, browserSyncTask, copyFontsTask, prettierCssTmpTask, compileJsTask, convertNunjuckTask, prettierHtmlTask, dummyData, doAfterBuildTask } from '@common/util/gulp-task-util';
-import { watchTask } from '@common/util/watch-task-util';
+import {
+  CleanTaskFormatted as CleanTask,
+  CopyImageTaskFormatted as CopyImageTask,
+  CopyFontTaskFormatted as CopyFontTask,
+  ConvertSassTaskFormatted as ConvertSassTask,
+  PrettierCssTaskFormatted as PrettierCssTask,
+  CompileJsTaskFormatted as CompileJsTask,
+  ConvertNunjuckTaskFormatted as ConvertNunjuckTask,
+  PrettierHtmlTaskFormatted as PrettierHtmlTask,
+  DummyDataTaskFormatted as DummyDataTask,
+  DoAfterBuildTaskFormatted as DoAfterBuildTask,
+  BrowserSyncTaskFormatted as BrowserSyncTask,
+} from '@common/gulp-task/gulp-task-manager';
+// import { watchTask } from '@common/util/watch-task-util';
 import gulp = require('gulp');
 
-//! ANCHOR - cleanTask
+//! ANCHOR - CleanTask
 //-- clean tmp task
-cleanTask.tmp.init();
+CleanTask.tmp.init();
 
 //-- clean dist task
-cleanTask.dist.init();
+CleanTask.dist.init();
 
-//! ANCHOR - convertSassTask
+//! ANCHOR - ConvertSassTask
 //-- convert sass to css into tmp
-convertSassTask.tmp.init();
+ConvertSassTask.tmp.init();
+
+//-- end convert sass tmp
+ConvertSassTask.end_tmp.init();
 
 //-- convert sass to css into dist
-convertSassTask.dist.init();
+ConvertSassTask.dist.init();
 
-//! ANCHOR - prettierCssTmpTask
+//! ANCHOR - PrettierCssTask
 //-- prettier css in dist
 //? chỉ sử dụng prettier css cho source css trong thư mục tmp
-prettierCssTmpTask.init();
+PrettierCssTask.tmp.init();
 
-//! ANCHOR - compileJsTask
+//! ANCHOR - CompileJsTask
 //-- compile js into tmp
-compileJsTask.tmp.init();
+CompileJsTask.tmp.init();
 
 //-- end compile js tmp
-compileJsTask.endTmp.init();
+CompileJsTask.end_tmp.init();
 
 //-- compile js into dist
-compileJsTask.dist.init();
+CompileJsTask.dist.init();
 
-//! ANCHOR - copyFontsTask
+//! ANCHOR - CopyFontTask
 //-- copy fonts to dist
-copyFontsTask.dist.init();
+CopyFontTask.dist.init();
 
-//! ANCHOR - convertNunjuckTask
+//! ANCHOR - ConvertNunjuckTask
 //-- convert nunjuck to html into tmp
-convertNunjuckTask.tmp.init();
+ConvertNunjuckTask.tmp.init();
+
+//-- end compile njk tmp
+ConvertNunjuckTask.end_tmp.init();
 
 //-- convert nunjuck to html into dist
-convertNunjuckTask.dist.init();
+ConvertNunjuckTask.dist.init();
 
-//! ANCHOR - prettierHtmlTask
+//! ANCHOR - PrettierHtmlTask
 //-- prettier html tmp
-prettierHtmlTask.tmp.init();
+PrettierHtmlTask.tmp.init();
 
-//! ANCHOR - dummyData
+//! ANCHOR - DummyDataTask
 //-- init dummy data
-dummyData.tmp.init();
+DummyDataTask.tmp.init();
 
 //-- prettier html dist
-prettierHtmlTask.dist.init();
+PrettierHtmlTask.dist.init();
 
-//! ANCHOR - copyImagesTask
+//! ANCHOR - CopyImageTask
 //-- copy images to dist
-copyImagesTask.dist.init();
+CopyImageTask.dist.init();
 
-//! ANCHOR  - watchTask
-//-- watch tmp files change task (with template njk)
-watchTask.tmp_with_template.init();
+// //! ANCHOR  - watchTask
+// //-- watch tmp files change task (with template njk)
+// watchTask.tmp_with_template.init();
 
-//-- watch tmp files change task (without template njk)
-watchTask.tmp.init();
+// //-- watch tmp files change task (without template njk)
+// watchTask.tmp.init();
 
-//! ANCHOR - doAfterBuildTask
+//! ANCHOR - DoAfterBuildTask.tmp
 //-- doAfterBuild task
-doAfterBuildTask.init();
+DoAfterBuildTask.tmp.init();
 
-//! ANCHOR - browserSyncTask
+//! ANCHOR - BrowserSyncTask.tmp
 //-- browserSync task
-browserSyncTask.init();
+BrowserSyncTask.tmp.init();
 
 //! ANCHOR - task runner
 //-- dev script
 //? build tmp with template njk
 gulp.task('dev:template', gulp.series(
-  cleanTask.tmp.name,
+  CleanTask.tmp.name,
   gulp.parallel(
-    convertSassTask.tmp.name,
+    gulp.series(
+      ConvertSassTask.tmp.name,
+      ConvertSassTask.end_tmp.name,
+    ),
 
     gulp.series(
-      compileJsTask.tmp.name,
-      compileJsTask.endTmp.name,
+      CompileJsTask.tmp.name,
+      CompileJsTask.end_tmp.name,
+    ),
+
+    gulp.series(
+      DummyDataTask.tmp.name,
+      ConvertNunjuckTask.tmp.name,
+      ConvertNunjuckTask.end_tmp.name,
     ),
   ),
 
-  gulp.series(
-    dummyData.tmp.name,
-    convertNunjuckTask.tmp.name,
-  ),
+  DoAfterBuildTask.tmp.name,
 
-  convertNunjuckTask.endTmp.name,
-  doAfterBuildTask.name,
   gulp.parallel(
-    watchTask.tmp_with_template.name,
-    browserSyncTask.name,
+    // watchTask.tmp_with_template.name,
+    BrowserSyncTask.tmp.name,
   )
 ));
 
 //? build tmp without layout njk
 gulp.task('dev', gulp.series(
-  cleanTask.tmp.name,
+  CleanTask.tmp.name,
   gulp.parallel(
-    convertSassTask.tmp.name,
+    gulp.series(
+      ConvertSassTask.tmp.name,
+      ConvertSassTask.end_tmp.name,
+    ),
 
     gulp.series(
-      compileJsTask.tmp.name,
-      compileJsTask.endTmp.name,
+      CompileJsTask.tmp.name,
+      CompileJsTask.end_tmp.name,
     ),
   ),
 
-  doAfterBuildTask.name,
+  DoAfterBuildTask.tmp.name,
   gulp.parallel(
-    watchTask.tmp.name,
-    browserSyncTask.name,
+    // watchTask.tmp.name,
+    BrowserSyncTask.tmp.name,
   )
 ));
 
@@ -123,15 +148,15 @@ gulp.task('dev', gulp.series(
 //? build production
 gulp.task('prod', gulp.series(
   gulp.parallel(
-    cleanTask.dist.name,
+    CleanTask.dist.name,
   ),
 
   gulp.parallel(
-    convertSassTask.dist.name,
-    copyFontsTask.dist.name,
-    copyImagesTask.dist.name,
-    compileJsTask.dist.name,
+    ConvertSassTask.dist.name,
+    CopyFontTask.dist.name,
+    CopyImageTask.dist.name,
+    CompileJsTask.dist.name,
   ),
-  convertNunjuckTask.dist.name,
-  prettierHtmlTask.dist.name,
+  ConvertNunjuckTask.dist.name,
+  PrettierHtmlTask.dist.name,
 ));

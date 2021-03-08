@@ -1,13 +1,7 @@
-interface ExtensionFileConstruct {
-  CSS: string,
-  HTML: string,
-  JS: string,
-  NJK: string,
-  JSON: string,
-};
+import './interface';
 
 // NOTE - Định nghĩa danh sách loại file
-export const ARR_FILE_EXTENSION:ExtensionFileConstruct = {
+export const ARR_FILE_EXTENSION:ExtensionFileUpperCaseInterface = {
   CSS: 'css',
   HTML: 'html',
   JS: 'js',
@@ -16,10 +10,10 @@ export const ARR_FILE_EXTENSION:ExtensionFileConstruct = {
 };
 
 // NOTE - Định nghĩa danh sách tên file
-export const ARR_FILE_EXTENSION_FULL_NAME = {
-  [ARR_FILE_EXTENSION.CSS]: 'CSS',
-  [ARR_FILE_EXTENSION.HTML]: 'HTML',
-  [ARR_FILE_EXTENSION.JS]: 'JavaScript',
-  [ARR_FILE_EXTENSION.NJK]: 'Nunjucks',
-  [ARR_FILE_EXTENSION.JSON]: 'JSON',
+export const ARR_FILE_EXTENSION_FULL_NAME:ExtensionFileLowerCaseInterface = {
+  css: 'CSS',
+  html: 'HTML',
+  js: 'JavaScript',
+  njk: 'Nunjucks',
+  json: 'JSON',
 };

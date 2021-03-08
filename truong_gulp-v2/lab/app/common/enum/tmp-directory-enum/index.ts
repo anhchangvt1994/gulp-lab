@@ -1,17 +1,7 @@
 import APP from '@common/enum/source-enum';
 import { ARR_FILE_EXTENSION } from '@common/define/file-define';
 import { isEmpty as _isEmpty } from 'lodash';
-
-interface TmpDirItemConstruct {
-  'file-name': string,
-  'file-path': string,
-}
-
-interface TmpDirConstruct {
-  'css': {[key:string]: TmpDirItemConstruct},
-  'js': {[key:string]: TmpDirItemConstruct},
-  'html': {[key:string]: TmpDirItemConstruct},
-}
+import './tmp-directory-interface';
 
 export const ARR_TMP_CONSTRUCT: TmpDirConstruct = {
   'css': {},

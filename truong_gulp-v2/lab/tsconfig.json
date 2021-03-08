@@ -11,6 +11,8 @@
       "@common/define/*": ["app/common/define/*"],
       "@common/util/*": ["app/common/util/*"],
       "@common/config/*": ["app/common/config/*"],
+      "@common/lib/*": ["app/common/lib/*"],
+      "@common/store/*": ["app/common/store/*"],
       "@source-data": ["src/data/index"],
       "@src/data/*": ["src/data/*"],
       "@src/dummy-data/*": ["src/dummy-data/*"],
