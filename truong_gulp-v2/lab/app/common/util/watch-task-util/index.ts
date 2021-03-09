@@ -11,8 +11,8 @@ browserSyncReloadTask.init();
 //! ANCHOR - __groupWatchFiles
 //-- Tạo ra method chứa những task watch có liên quan với nhau, dùng để xử lý 1 gulp task vd gulp task images hay gulp task fonts
 interface arrRelativeTaskListConstruct {
-  'add'?: any,
-  'remove'?: any,
+  'add'?: string,
+  'remove'?: Function,
   'other'?: any,
 };
 
