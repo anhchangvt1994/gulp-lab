@@ -5,6 +5,6 @@ interface arrRelativeTaskListInterface {
 };
 
 interface arrWatchFilesConfigInterface {
-  'sourcePathUrl': string | Array<string>,
-  'relativeTaskList': arrRelativeTaskListInterface,
+  'source_path_url': string | Array<string>,
+  'relative_task_list': arrRelativeTaskListInterface,
 };

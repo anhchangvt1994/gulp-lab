@@ -59,7 +59,9 @@ export const RESOURCE: ResourceConstruct = {
       "arrCssFile": [
         'vendor-style'
       ],
-      "arrJsFile": []
+      "arrJsFile": [
+        'vendor',
+      ]
     },
 
     "home-page" : {

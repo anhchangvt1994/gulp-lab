@@ -47,12 +47,12 @@ export default class ConvertNunjuckTask {
 
             let filePathData = null;
 
-            if(filename === 'index.njk') {
+            if(foldername === 'template') {
               // NOTE Khi một file index thay đổi thì nó sẽ tự build lại, nên trong xử lý dependent sẽ update lại các dependents file của file index đó
               filePathData = GulpTaskStore.get(STATE_KEYS.njk_dependents).generate({
-                'folder-name': foldername,
+                'folder-name': filename,
                 'path': file.path,
-                'file-name': filename,
+                'file-name': 'index.njk',
                 'content': file.contents,
               });
             } else {
@@ -71,9 +71,8 @@ export default class ConvertNunjuckTask {
                 filePath = filePath.replace(/\\/g, '/');
 
                 let filename = filePath.split('/').slice(-2)[1];
-                const foldername = filePath.split('/').slice(-2)[0];
 
-                filename = (foldername!==ARR_FILE_EXTENSION.NJK ? foldername : filename.replace('.njk', ''));
+                filename = filename.replace('.njk', '');
 
                 modules.gulp.src(filePath)
                 .pipe(modules.print(
@@ -84,8 +83,8 @@ export default class ConvertNunjuckTask {
                 .pipe(modules.data((file) => {
                   let responseData:any = {};
 
-                  if(RESOURCE.resource[foldername]?.dummy_data) {
-                    responseData = GulpTaskStore.get(STATE_KEYS.dummy_data_manager).get(foldername) || {};
+                  if(RESOURCE.resource[filename]?.dummy_data) {
+                    responseData = GulpTaskStore.get(STATE_KEYS.dummy_data_manager).get(filename) || {};
                   }
 
                   if(
@@ -100,14 +99,14 @@ export default class ConvertNunjuckTask {
                       GulpTaskStore.get(STATE_KEYS.handler_error_util).reportError();
                     }
                   } else {
-                    GulpTaskStore.get(STATE_KEYS.handler_error_util).checkClearError(_isError, ARR_FILE_EXTENSION.JSON, foldername + '.' + ARR_FILE_EXTENSION.JSON);
+                    GulpTaskStore.get(STATE_KEYS.handler_error_util).checkClearError(_isError, ARR_FILE_EXTENSION.JSON, filename + '.' + ARR_FILE_EXTENSION.JSON);
                   }
 
                   responseData = (_isError ? {} : responseData.data);
 
                   return {
-                    file: filePath.split('/')[filePath.split('/').length - 2],
-                    namepage: filePath.split('/')[filePath.split('/').length - 2],
+                    file: filename,
+                    namepage: filename,
                     data: responseData,
                     CACHE_VERSION: GulpTaskStore.get(STATE_KEYS.update_version),
                     EVN_APPLICATION: EVN_APPLICATION.dev,
@@ -207,32 +206,30 @@ export default class ConvertNunjuckTask {
           };
 
           const _NJK_COMPILE_FILE_LIST = [
-            APP.src.njk + '/**/index.njk',
+            APP.src.njk + '/template/**/*.njk',
           ];
 
           return modules.gulp.src(_NJK_COMPILE_FILE_LIST)
           .pipe(modules.tap(function(file) {
             const filePath = file.path.replace(/\\/g, '/');
 
-            // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
             let filename = filePath.split('/').slice(-2)[1];
-            const foldername = filePath.split('/').slice(-2)[0];
 
-            filename = (foldername!==ARR_FILE_EXTENSION.NJK ? foldername : filename.replace('.njk', ''));
+            filename = filename.replace('.njk', '');
 
             modules.gulp.src(filePath)
             .pipe(modules.data(() => {
               let responseData:any = {};
 
-              if(RESOURCE.resource[foldername]?.dummy_data) {
-                responseData = GulpTaskStore.get(STATE_KEYS.dummy_data_manager).get(foldername) || {};
+              if(RESOURCE.resource[filename]?.dummy_data) {
+                responseData = GulpTaskStore.get(STATE_KEYS.dummy_data_manager).get(filename) || {};
               }
 
               responseData = (!responseData.success ? {} : responseData.data);
 
               return {
-                file: filePath.split('/')[filePath.split('/').length - 2],
-                namepage: filePath.split('/')[filePath.split('/').length - 2],
+                file: filename,
+                namepage: filename,
                 data: responseData,
                 CACHE_VERSION: GulpTaskStore.get(STATE_KEYS.update_version),
                 EVN_APPLICATION: EVN_APPLICATION.dev,

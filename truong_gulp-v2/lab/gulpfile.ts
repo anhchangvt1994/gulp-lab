@@ -1,4 +1,6 @@
 import 'tsconfig-paths/register';
+import gulp = require('gulp');
+
 import {
   CleanTaskFormatted as CleanTask,
   CopyImageTaskFormatted as CopyImageTask,
@@ -12,8 +14,11 @@ import {
   DoAfterBuildTaskFormatted as DoAfterBuildTask,
   BrowserSyncTaskFormatted as BrowserSyncTask,
 } from '@common/gulp-task/gulp-task-manager';
-// import { watchTask } from '@common/util/watch-task-util';
-import gulp = require('gulp');
+
+import {
+  WatchTmpWithTemplateTask,
+  WatchTmpWithoutTemplateTask
+} from '@common/watch-task/watch-task-manager';
 
 //! ANCHOR - CleanTask
 //-- clean tmp task
@@ -76,12 +81,12 @@ PrettierHtmlTask.dist.init();
 //-- copy images to dist
 CopyImageTask.dist.init();
 
-// //! ANCHOR  - watchTask
-// //-- watch tmp files change task (with template njk)
-// watchTask.tmp_with_template.init();
+//! ANCHOR  - watchTask
+//-- watch tmp files change task (with template njk)
+WatchTmpWithTemplateTask.init();
 
-// //-- watch tmp files change task (without template njk)
-// watchTask.tmp.init();
+//-- watch tmp files change task (without template njk)
+WatchTmpWithoutTemplateTask.init();
 
 //! ANCHOR - DoAfterBuildTask.tmp
 //-- doAfterBuild task
@@ -117,7 +122,7 @@ gulp.task('dev:template', gulp.series(
   DoAfterBuildTask.tmp.name,
 
   gulp.parallel(
-    // watchTask.tmp_with_template.name,
+    WatchTmpWithTemplateTask.name,
     BrowserSyncTask.tmp.name,
   )
 ));
@@ -139,7 +144,7 @@ gulp.task('dev', gulp.series(
 
   DoAfterBuildTask.tmp.name,
   gulp.parallel(
-    // watchTask.tmp.name,
+    WatchTmpWithoutTemplateTask.name,
     BrowserSyncTask.tmp.name,
   )
 ));
@@ -152,11 +157,12 @@ gulp.task('prod', gulp.series(
   ),
 
   gulp.parallel(
+    ConvertNunjuckTask.dist.name,
     ConvertSassTask.dist.name,
     CopyFontTask.dist.name,
     CopyImageTask.dist.name,
     CompileJsTask.dist.name,
   ),
-  ConvertNunjuckTask.dist.name,
+
   PrettierHtmlTask.dist.name,
 ));

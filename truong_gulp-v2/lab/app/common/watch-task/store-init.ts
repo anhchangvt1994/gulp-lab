@@ -9,22 +9,22 @@ import {
   WatchTaskStore
 } from './store';
 
-// NOTE - Setup valud for 'store-init'
+// NOTE - Setup value for 'store-init'
 WatchTaskStore.commit(MUTATION_KEYS.set_group_watch_file, function(arrWatchFilesConfig: arrWatchFilesConfigInterface) {
   //-- khi thêm files
-  if(arrWatchFilesConfig.relativeTaskList.add) {
-    gulp.watch(arrWatchFilesConfig.sourcePathUrl,
+  if(arrWatchFilesConfig.relative_task_list.add) {
+    gulp.watch(arrWatchFilesConfig.source_path_url,
     {events : ['add','change']},
     gulp.series(
-      arrWatchFilesConfig.relativeTaskList.add,
+      arrWatchFilesConfig.relative_task_list.add,
     ));
   }
 
   //-- khi xóa files
-  const watchDelFiles = gulp.watch(arrWatchFilesConfig.sourcePathUrl);
+  const watchDelFiles = gulp.watch(arrWatchFilesConfig.source_path_url);
 
   watchDelFiles.on('unlink', function(filepath) {
-    const removeTask = arrWatchFilesConfig.relativeTaskList.remove;
+    const removeTask = arrWatchFilesConfig.relative_task_list.remove;
 
     if(
       removeTask &&

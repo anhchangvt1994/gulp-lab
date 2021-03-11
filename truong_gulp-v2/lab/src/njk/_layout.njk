@@ -25,13 +25,13 @@
 
     <!-- global js file (common.js) -->
     {% for jsFile in objResource['common']['arrJsFile'] %}
-      <script src="{{ LAYOUT_CONFIG.jsUrl + jsFile + '.js' + '?v=' + CACHE_VERSION }}"></script>
+      <script type="text/javascript" src="{{ LAYOUT_CONFIG.jsUrl + jsFile + '.js' + '?v=' + CACHE_VERSION }}"></script>
     {% endfor %}
   </head>
   <body class='{{ data.body_class_name }}'>
     <!-- header region -->
     {% block header %}
-      {% include "./global/header-section.njk" %}
+      {% include "./partial/global/header-section.njk" %}
     {% endblock %}
     <!-- #end header region -->
 
@@ -41,16 +41,19 @@
 
     <!-- footer region -->
     {% block footer %}
-      {% include "./global/footer-section.njk" %}
+      {% include "./partial/global/footer-section.njk" %}
     {% endblock %}
     <!-- #end footer region -->
 
+    <!-- other js file -->
+    <script type="text/javascript">
+      window.PAGE_INFO = {};
+    </script>
+    {% block script %}{% endblock %}
+
     <!-- page js file -->
     {% for jsFile in objResource[namepage]['arrJsFile'] %}
-      <script src="{{ LAYOUT_CONFIG.jsUrl + jsFile + '.js' + '?v=' + CACHE_VERSION }}"></script>
+      <script type="text/javascript" src="{{ LAYOUT_CONFIG.jsUrl + jsFile + '.js' + '?v=' + CACHE_VERSION }}"></script>
     {% endfor %}
-
-    <!-- other js file -->
-    {% block script %}{% endblock %}
   </body>
 </html>

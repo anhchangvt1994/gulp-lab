@@ -22,7 +22,7 @@ export default class ComipleJsTask {
 
           let _arrJsErrorFileList = [];
 
-          return modules.gulp.src([APP.src.js + '/**/*.js', APP.src.js + '/**/component/*.vue'])
+          return modules.gulp.src([APP.src.js + '/**/*.js', APP.src.js + '/**/component/**/*.vue'])
           .pipe(modules.plumber({
             'errorHandler': function(err) {
               _arrJsErrorFileList.push(err.fileName);

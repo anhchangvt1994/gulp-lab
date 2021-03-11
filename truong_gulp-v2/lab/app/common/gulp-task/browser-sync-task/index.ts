@@ -13,7 +13,7 @@ export default class BrowserSyncTask {
       init:  function() {
         modules.gulp.task("browserSync", function() {
           return modules.browserSync.init({
-            reloadDelay: 150, // Fix htmlprocess watch not change
+            reloadDelay: 250, // Fix htmlprocess watch not change
             open: false, // Stop auto open browser
             cors: false,
             port: RESOURCE.port,

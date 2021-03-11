@@ -50,7 +50,7 @@ export default class DummyDataTask {
             // NOTE split file.path và lấy tên file cùng tên folder để rename đúng tên cho file njk phía tmp
             const filename = filePath.split('/').slice(-2)[1].replace('.json','');
 
-            filePath = APP.src.njk + '/' + filename + '/index.' + ARR_FILE_EXTENSION.NJK;
+            filePath = APP.src.njk + '/template/' + filename + '.' + ARR_FILE_EXTENSION.NJK;
 
             modules.gulp.src(filePath)
             .pipe(modules.print(

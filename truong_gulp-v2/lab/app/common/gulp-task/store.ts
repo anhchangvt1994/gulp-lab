@@ -55,6 +55,10 @@ export const GulpTaskStore = new Store({
       state[STATE_KEYS.tmp_construct] = payload;
     },
 
+    [MUTATION_KEYS.set_move_file]: function(state, payload) {
+      state[STATE_KEYS.move_file] = payload;
+    },
+
     [MUTATION_KEYS.set_js_dependents]: function(state, payload) {
       state[STATE_KEYS.js_dependents] = payload;
     },

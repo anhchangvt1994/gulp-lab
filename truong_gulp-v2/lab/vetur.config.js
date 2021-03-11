@@ -1,7 +1,9 @@
 module.exports = {
   projects: [
     {
-      root: '.',
+      root: './',
+      package: './package.json',
+      tsconfig: './tsconfig.json',
     },
   ]
 };

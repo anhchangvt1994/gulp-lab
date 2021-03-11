@@ -26,6 +26,11 @@
     />
 
     <!-- global js file (common.js) -->
+
+    <script
+      type="text/javascript"
+      src="http://static.dev.vn:3000/js/vendor.js?v=270369"
+    ></script>
   </head>
   <body class="home-page">
     <!-- header region -->
@@ -40,7 +45,7 @@
             <div class="header-block__logo-shape">
               <div class="header-block__logo-shape-inner">
                 <img
-                  src="http://static.dev.vn:3000/image/logo/gulp-logo.jpg?v=270369"
+                  src="http://static.dev.vn:3000/image/logo/glax-logo-2x.png?v=270369"
                   alt="gulp"
                   class="header-block__logo-img"
                 />
@@ -62,28 +67,6 @@
 
     <section id="home-section"></section>
 
-    <script>
-      window.PAGE_INFO = {};
-
-      window.PAGE_INFO.resProductList = {
-        success: false,
-        error: {},
-        data: {
-          product_list: [
-            {
-              logo: 'gulp-logo.jpg',
-              title: 'Gulp!',
-              sub_title: 'A toolkit to automate & enhance your workflow',
-              desc:
-                'Leverage gulp and the flexibility of JavaScript to automate slow, repetitive workflows and compose them into efficient build pipelines.',
-              url: 'https://gulpjs.com'
-            }
-          ]
-        }
-      };
-      window.PAGE_INFO.image_url = 'http://static.dev.vn:3000/image/';
-    </script>
-
     <!-- #end body region -->
 
     <!-- footer region -->
@@ -92,7 +75,7 @@
       <div class="container">
         <div class="footer-block">
           <div class="footer-block__copy-right-label">
-            copyright gulp-lab 2021
+            Copyright G-Lax 2021
           </div>
         </div>
         <!-- .footer-block -->
@@ -103,32 +86,71 @@
 
     <!-- #end footer region -->
 
-    <!-- page js file -->
-
-    <script src="http://static.dev.vn:3000/js/home-page.js?v=270369"></script>
-
     <!-- other js file -->
-
-    <script>
+    <script type="text/javascript">
       window.PAGE_INFO = {};
+    </script>
 
+    <script type="text/javascript">
       window.PAGE_INFO.resProductList = {
         success: false,
         error: {},
         data: {
           product_list: [
             {
-              logo: 'gulp-logo.jpg',
-              title: 'Gulp!',
+              logo: 'gulp-logo-2x.png',
+              title: 'Gulp',
               sub_title: 'A toolkit to automate & enhance your workflow',
               desc:
                 'Leverage gulp and the flexibility of JavaScript to automate slow, repetitive workflows and compose them into efficient build pipelines.',
               url: 'https://gulpjs.com'
+            },
+            {
+              logo: 'njk-logo-2x.png',
+              title: 'Nunjuck',
+              sub_title:
+                'Nunjucks is a full featured templating engine for javascript',
+              desc:
+                "Nunjucks has allowed us to port all of our existing templates from a Django project to something that's easier to manage. By moving our templates to the client, transfer sizes are reduced and page responsiveness increases significantly. Our API supplies data, meaning we can decouple testing the front-end from testing the back-end. Nunjucks has made our app feel native.",
+              url: 'https://mozilla.github.io/nunjucks/'
+            },
+            {
+              logo: 'sass-logo-2x.png',
+              title: 'Sass',
+              sub_title:
+                'Sass is the most mature, stable, and powerful professional grade CSS extension language in the world.',
+              desc:
+                "Sass is an extension of CSS, adding nested rules, variables, mixins, selector inheritance, and more. It's translated to well-formatted, standard CSS using the command line tool or a plugin for your build system.",
+              url: 'https://sass-lang.com/'
+            },
+            {
+              logo: 'js-logo-2x.png',
+              title: 'Javascript',
+              sub_title:
+                'JavaScript (JS) is a lightweight, interpreted, or just-in-time compiled programming language with first-class functions',
+              desc:
+                'JavaScript is among the most powerful and flexible programming languages of the web. It powers the dynamic behavior on most websites, including this one.',
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript'
+            },
+            {
+              logo: 'vue-logo-2x.png',
+              title: 'VueJS',
+              sub_title: 'Vue.js is an MIT-licensed open source project',
+              desc:
+                'Vue.js is an MIT-licensed open source project with its ongoing development made possible entirely by the support of these awesome backers.',
+              url: 'https://vuejs.org/'
             }
           ]
         }
       };
-      window.PAGE_INFO.image_url = 'http://static.dev.vn:3000/image/';
+      window.PAGE_INFO.image_url = 'http://static.dev.vn:3000/image';
     </script>
+
+    <!-- page js file -->
+
+    <script
+      type="text/javascript"
+      src="http://static.dev.vn:3000/js/home-page.js?v=270369"
+    ></script>
   </body>
 </html>

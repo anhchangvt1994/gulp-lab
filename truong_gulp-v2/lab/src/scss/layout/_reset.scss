@@ -22,11 +22,16 @@ time, mark, audio, video {
 	vertical-align: baseline;
 }
 
+html {
+  font-size: 8px;
+  height: 100%;
+}
+
 body {
   line-height: var.$line-height-default;
   font-size: var.$font-size-default;
   width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
   line-height: 1.5;
 
   @media screen and (min-width: grid.$break-point-lg) {

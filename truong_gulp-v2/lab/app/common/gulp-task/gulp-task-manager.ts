@@ -1,7 +1,6 @@
-import './store-init';
-
 import { isEmpty as _isEmpty } from 'lodash';
 
+import './store-init';
 import CleanTask from '@common/gulp-task/clean-task';
 import CopyImageTask from '@common/gulp-task/copy-image-task';
 import CopyFontTask from '@common/gulp-task/copy-font-task';
